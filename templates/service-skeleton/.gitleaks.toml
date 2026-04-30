@@ -1,0 +1,13 @@
+title = "__SERVICE_NAME__"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "documentation placeholders"
+paths = ['''\.env\.example$''', '''README\.md$''', '''docs/.*\.md$''', '''CHANGELOG\.md$''']
+regexes = ['''replace_me''', '''<TOKEN>''', '''<SECRET>''']
+
+[[allowlists]]
+description = "pnpm lockfile integrity hashes"
+paths = ['''pnpm-lock\.yaml$''']

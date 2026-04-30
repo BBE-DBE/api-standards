@@ -1,0 +1,74 @@
+# Error-Codes Registry — BBE-DBE ecosystem.
+#
+# Every service uses these codes verbatim in HTTP error responses:
+#   { "error": { "code": "<code>", "message": "<human>", "details": <any> } }
+#
+# Adding a code requires:
+#   1) PR to api-standards bumping the calver
+#   2) entry below
+#   3) update of the consuming services' src/lib/errors.ts ErrorCode union
+#
+# Removing or renaming a code is a BREAKING change. Don't.
+
+version: "1"
+codes:
+
+  # ---- 4xx — caller's problem -------------------------------
+  unauthorized:
+    http: 401
+    description: |
+      The Authorization header is missing, malformed, or the token is
+      not recognised. Distinct from `forbidden` which means the token
+      is valid but lacks scope.
+  forbidden:
+    http: 403
+    description: |
+      Token is valid but the required scope is missing.
+  not_found:
+    http: 404
+    description: Target resource does not exist (or is no longer accessible).
+  conflict:
+    http: 409
+    description: |
+      State conflict — generic catch-all. Prefer a more specific
+      sub-code (idempotency_mismatch, illegal_state_transition,
+      insufficient_capacity) when applicable.
+  invalid_input:
+    http: 422
+    description: |
+      Body or query failed schema validation. `details` carries the
+      list of zod issues (or equivalent).
+  idempotency_mismatch:
+    http: 409
+    description: |
+      Same Idempotency-Key arrived with a different body hash. Caller
+      must resolve by either retrying with the original body OR
+      generating a new key.
+  insufficient_capacity:
+    http: 409
+    description: |
+      Caller asked for more than is available (e.g. reserve count > free).
+      `details` carries `{ requested, available }`.
+  illegal_state_transition:
+    http: 409
+    description: |
+      State machine refused the transition. `details` carries
+      `{ from, to }`.
+  too_many_failed_auth:
+    http: 429
+    description: |
+      Brute-force counter (per key_id or per source-IP) tripped.
+      `details` carries `{ retry_after_seconds }`. The same value is
+      also in the standard `Retry-After` header.
+
+  # ---- 5xx — our problem ------------------------------------
+  internal:
+    http: 500
+    description: |
+      Unhandled error. Sanitised public message — diagnostic detail
+      only in the service log under request_id.
+  not_ready:
+    http: 503
+    description: |
+      Subsystem (DB, sweeper, listener) not yet healthy. Used by
+      `/health/ready` and orchestrators.

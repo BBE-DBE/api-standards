@@ -1,0 +1,37 @@
+name: test
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: install
+        run: pnpm install --frozen-lockfile
+
+      - name: typecheck
+        run: pnpm exec tsc -p tsconfig.json --noEmit
+
+      - name: build
+        env: { GIT_SHA: ${{ github.sha }} }
+        run: pnpm build
+
+      - name: unit tests + coverage
+        run: pnpm coverage
+
+      - name: pnpm audit (high+critical fail the build)
+        run: pnpm audit --audit-level=high

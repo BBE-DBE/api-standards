@@ -1,0 +1,97 @@
+# /health response shapes — BBE-DBE ecosystem.
+#
+# Three endpoints, three shapes. Orchestrators and dashboards rely on the
+# field names below. Service-specific extras may sit in `pool` or
+# top-level — consumers tolerate unknown keys.
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://github.com/BBE-DBE/api-standards/protocols/health-response-schema.yaml"
+
+definitions:
+
+  # ---- /health/live ---------------------------------------------
+  Live:
+    type: object
+    additionalProperties: false
+    required: [status]
+    properties:
+      status:
+        const: ok
+    description: |
+      Process is alive. Returned 200. No DB or subsystem check.
+
+  # ---- /health/ready --------------------------------------------
+  Ready:
+    oneOf:
+      - type: object
+        additionalProperties: false
+        required: [status]
+        properties:
+          status: { const: ok }
+      - type: object
+        additionalProperties: false
+        required: [error]
+        properties:
+          error:
+            type: object
+            required: [code, message]
+            properties:
+              code:    { const: not_ready }
+              message: { type: string }
+              details: { type: [object, "null"] }
+    description: |
+      Returns 200 if every subsystem (DB, sweeper, listener) is up.
+      Otherwise 503 with `{ error: { code: "not_ready", details } }`.
+
+  # ---- /health (full) -------------------------------------------
+  Full:
+    type: object
+    additionalProperties: true
+    required: [status, version, uptime_s, db]
+    properties:
+      status:
+        enum: [ok, degraded, down]
+        description: |
+          - ok       — all subsystems green
+          - degraded — service still answers but a dependent system has
+                       known issues (outbox dead-letter > 0, listener
+                       disconnected, etc.)
+          - down     — DB unreachable. Returned 200 anyway so monitors
+                       can read the body; orchestrators should use
+                       /health/ready for a binary signal.
+      version:
+        type: string
+        pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+\\+.+"
+        description: "semver+gitsha"
+      uptime_s:
+        type: integer
+        minimum: 0
+      db:
+        type: object
+        additionalProperties: false
+        required: [up, latency_ms]
+        properties:
+          up:         { type: boolean }
+          latency_ms: { type: integer }
+      sweeper:
+        type: object
+        properties:
+          last_run_at:      { type: [string, "null"], format: date-time }
+          last_freed_count: { type: integer, minimum: 0 }
+      pool:
+        type: object
+        description: |
+          Service-specific counters. ip-pool-api uses this for
+          state-buckets (free/reserved/active/...) plus outbox stats.
+        additionalProperties: { type: integer }
+      adapters:
+        type: array
+        items: { type: string }
+      hooks:
+        type: array
+        items:
+          type: object
+          required: [name, events]
+          properties:
+            name:   { type: string }
+            events: { type: array, items: { type: string } }

@@ -1,0 +1,99 @@
+# Audit-Event Schema (verbindlich) — BBE-DBE ecosystem.
+#
+# Every state mutation in any service MUST emit an audit event in this
+# shape. The schema is JSON-Schema 2020-12 expressed as YAML for
+# readability. Services validate against this when they ship a
+# `lib/audit.ts` based on the service-skeleton.
+#
+# Fields are intentionally minimal — service-specific detail goes into
+# `meta` (free-form object). We do NOT version the event-shape itself
+# beyond additive evolution: a new field is added optionally, never
+# renamed, never removed. Consumers tolerate unknown fields.
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://github.com/BBE-DBE/api-standards/protocols/audit-event-schema.yaml"
+title: AuditEvent
+type: object
+additionalProperties: false
+required:
+  - event_uuid
+  - subject_ref
+  - actor_kind
+  - actor_id
+  - action
+  - at
+  - meta
+properties:
+  event_uuid:
+    description: |
+      Stable, monotonic, dedupe-safe identifier (UUIDv7).
+      Same value also lives in events.event_uuid (DB column).
+    type: string
+    format: uuid
+
+  subject_id:
+    description: |
+      Internal numeric id of the mutated row (BIGSERIAL). May be null
+      (e.g. when the event is about a deletion or about a foreign object).
+    type: [integer, "null"]
+    minimum: 1
+
+  subject_ref:
+    description: |
+      Human-meaningful reference for the subject. Service-specific
+      convention — e.g. an IP address, a slug, a public_id. Required.
+    type: string
+    minLength: 1
+
+  actor_kind:
+    description: Who triggered the event.
+    enum: [agent, user, system]
+
+  actor_id:
+    description: |
+      Stable identifier of the actor. For API-key-authenticated callers
+      this is api_keys.public_id (UUIDv7). NEVER the raw token. For
+      "system" actors (sweepers, schedulers) this is "system:<component>".
+    type: string
+    minLength: 1
+
+  run_id:
+    description: |
+      Optional correlation id for a multi-step agent run. Same value
+      across all events that belong to the same logical workflow.
+    type: [string, "null"]
+    maxLength: 128
+
+  action:
+    description: |
+      Service-specific verb. Conventionally past-tense, e.g. "created",
+      "reserved", "released", "expired", "revoked", "imported".
+    type: string
+    minLength: 1
+    pattern: "^[a-z][a-z0-9_]*$"
+
+  from_state:
+    description: Previous state (if state-machine), else null.
+    type: [string, "null"]
+
+  to_state:
+    description: New state (if state-machine), else null.
+    type: [string, "null"]
+
+  meta:
+    description: |
+      Free-form. MUST include `build_version` (semver+sha of the
+      emitting service). Service-specific keys allowed; consumers
+      tolerate unknown keys.
+    type: object
+    required: [build_version]
+    properties:
+      build_version:
+        type: string
+        pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+\\+.+"
+    additionalProperties: true
+
+  at:
+    description: ISO-8601 UTC timestamp with Z suffix.
+    type: string
+    format: date-time
