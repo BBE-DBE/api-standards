@@ -43,9 +43,10 @@ confusion alone is a strong reason to keep prefixes globally unique.
 
 ## Registry
 
-| Prefix  | Service       | Repository                    | Reserved at | Status   |
-|---------|---------------|-------------------------------|-------------|----------|
-| `iplk_` | ip-pool-api   | `BBE-DBE/ip-pool-api` v0.3.0  | 2026-04-30  | active   |
+| Prefix  | Service       | Repository                       | Reserved at | Status   |
+|---------|---------------|----------------------------------|-------------|----------|
+| `iplk_` | ip-pool-api   | `BBE-DBE/ip-pool-api` v0.3.0     | 2026-04-30  | active   |
+| `prr_`  | port-registry | `BBE-DBE/port-registry` v0.1.0-rc1 | 2026-05-01  | active   |
 
 <!-- Append rows in chronological order. Status ∈ {active, retired, RETIRED}.
      Retired = soft-retired (90-day cooldown still running).
@@ -59,7 +60,7 @@ to the main registry when the service is committed.
 
 | Prefix  | Service       | Note                                  | Reserved at |
 |---------|---------------|---------------------------------------|-------------|
-| `prr_`  | port-registry | bootstrap deferred, see notes 2026-05 | 2026-05-01  |
+| _(none currently)_ |        |                                       |             |
 
 ## How an agent uses this
 
