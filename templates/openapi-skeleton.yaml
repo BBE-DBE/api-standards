@@ -1,0 +1,92 @@
+# OpenAPI 3.1 stub — every BBE-DBE service exposes this at GET /openapi.yaml.
+# Most services GENERATE this file at runtime from zod schemas via
+# fastify-type-provider-zod + @fastify/swagger. This file is the **fallback
+# shape** for services that haven't wired the generator yet.
+#
+# Conventions:
+#   * Bearer token auth via security scheme "bearer", bearerFormat = token-prefix
+#     (e.g. "iplk" for ip-pool-api, "prr" for port-registry).
+#   * /v1/* paths only — bumps are reserved for breaking changes.
+#   * Idempotency-Key header is a parameter on every POST/PUT/PATCH/DELETE.
+#   * Every error response uses the shape from protocols/error-codes.yaml.
+
+openapi: 3.1.0
+info:
+  title: __SERVICE_NAME__
+  version: 0.1.0+unknown
+  description: __SERVICE_DESC__
+  license:
+    name: UNLICENSED
+
+servers:
+  - url: http://127.0.0.1:__DEFAULT_PORT__
+    description: loopback (production binds 127.0.0.1)
+
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: token   # services override with their token-prefix
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:    { type: string, description: "see api-standards/protocols/error-codes.yaml" }
+            message: { type: string }
+            details: { type: [object, "null"] }
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      tags: [health]
+      responses:
+        "200":
+          description: full health report
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, version, uptime_s, db]
+
+  /health/live:
+    get:
+      operationId: getHealthLive
+      tags: [health]
+      responses:
+        "200":
+          description: process is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { const: ok }
+
+  /health/ready:
+    get:
+      operationId: getHealthReady
+      tags: [health]
+      responses:
+        "200":
+          description: subsystems ready
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { const: ok }
+        "503":
+          description: not ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"

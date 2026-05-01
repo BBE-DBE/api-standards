@@ -11,7 +11,7 @@ if [[ ! -f .env ]]; then echo "[migrate] .env missing" >&2; exit 1; fi
 # shellcheck disable=SC1091
 set -a; . ./.env; set +a
 
-CONTAINER="infra-postgres"
+CONTAINER="${POSTGRES_CONTAINER:-infra-postgres}"
 PSQL=(docker exec -i -e "PGPASSWORD=${PGPASSWORD}" "${CONTAINER}"
   psql -h 127.0.0.1 -p 5432 -U "${PGUSER}" -d "${PGDATABASE}"
   -v ON_ERROR_STOP=1 --no-psqlrc -tA)

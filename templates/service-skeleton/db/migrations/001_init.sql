@@ -62,3 +62,17 @@ CREATE TABLE IF NOT EXISTS __DB_SCHEMA__.idempotency_keys (
 );
 CREATE INDEX IF NOT EXISTS idempotency_keys_created_at
   ON __DB_SCHEMA__.idempotency_keys (created_at);
+
+-- ---- update_updated_at() ------------------------------------
+-- Generic BEFORE UPDATE trigger function for any table with an
+-- updated_at TIMESTAMPTZ column. Service-specific tables in 002+
+-- attach a trigger like:
+--   CREATE TRIGGER trg_<table>_updated_at
+--     BEFORE UPDATE ON __DB_SCHEMA__.<table>
+--     FOR EACH ROW EXECUTE FUNCTION __DB_SCHEMA__.update_updated_at();
+CREATE OR REPLACE FUNCTION __DB_SCHEMA__.update_updated_at()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END $$;

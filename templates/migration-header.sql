@@ -1,0 +1,29 @@
+-- ============================================================
+-- BBE-DBE migration header convention
+--
+-- Every SQL migration begins with these three lines:
+--   -- Author: <full name>
+--   -- Date:   YYYY-MM-DD
+--   -- Commit: <git ref or SHA at time of authoring>
+--
+-- scripts/migrate.sh parses these lines and stores Author/Date/Commit
+-- alongside the SHA-256 of the file body in <schema>.schema_migrations.
+-- The SHA-256 enables drift detection: if a migration file is edited
+-- after it was applied, migrate.sh aborts.
+--
+-- Body conventions:
+--   * Use IF NOT EXISTS / OR REPLACE for idempotency where safe.
+--   * Never DROP a previously-shipped table; deprecate-and-replace.
+--   * Add a one-line `COMMENT ON ...` for any non-trivial table/column.
+--   * Triggers go right next to the table they enforce.
+--   * Indexes go right after the columns they accelerate.
+-- ============================================================
+
+-- Author: <fill at first run>
+-- Date:   <fill at first run>
+-- Commit: bootstrap from api-standards/templates/service-skeleton
+-- ============================================================
+-- <one-line summary of what this migration does>
+-- ============================================================
+
+-- <SQL body>
