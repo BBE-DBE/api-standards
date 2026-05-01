@@ -28,14 +28,19 @@
 #         --desc="Single Source of Truth for server ports"
 #
 # Flags:
-#   --schema       (required if not given positionally)  snake_case
+#   --schema       (optional)  snake_case; defaults to <name>
+#                  with '-' replaced by '_' (e.g. port-registry → port_registry)
 #   --port         (required if not given positionally)  1024..65535
 #   --prefix       (optional)  2-4 lowercase letters; reserved per
-#                  service in _optional/auth/README.md
+#                  service in _optional/auth/PREFIX-REGISTRY.md
 #   --token-prefix (optional)  alias of --prefix
 #   --with-auth    (optional)  copy _optional/auth/migration.sql into
-#                  db/migrations/002_auth.sql with substitution
+#                  db/migrations/002_auth.sql with substitution; requires --prefix
 #   --desc         (optional)  one-line service description
+#   --dry-run      (optional)  generate the scaffold, run all substitutions
+#                  and validations, then DELETE the target directory.
+#                  No git init, no commit. Used to validate the skeleton
+#                  + the script itself without leaving anything on disk.
 #
 # Result:
 #   ~/projects/<name>/                                  (scaffold ready)
@@ -74,6 +79,7 @@ PORT=""
 DESC=""
 TOKEN_PREFIX=""
 WITH_AUTH="0"
+DRY_RUN="0"
 
 POSITIONAL=()
 for arg in "$@"; do
@@ -84,6 +90,7 @@ for arg in "$@"; do
     --token-prefix=*)  TOKEN_PREFIX="${arg#*=}" ;;
     --desc=*)          DESC="${arg#*=}" ;;
     --with-auth)       WITH_AUTH="1" ;;
+    --dry-run)         DRY_RUN="1" ;;
     --help|-h)         usage ;;
     --*)               echo "[new-service] unknown flag: ${arg}" >&2; usage ;;
     *)                 POSITIONAL+=("${arg}") ;;
@@ -106,8 +113,15 @@ fi
 
 # --- validation ---------------------------------------------------------
 [[ -n "${NAME}"   ]] || { echo "[new-service] missing <name>" >&2;        usage; }
-[[ -n "${SCHEMA}" ]] || { echo "[new-service] missing --schema/<schema>" >&2; usage; }
 [[ -n "${PORT}"   ]] || { echo "[new-service] missing --port/<port>"     >&2; usage; }
+
+# Schema default: derive from name with '-' replaced by '_'.
+# Convention: kebab-case service names map to snake_case schemas
+# (e.g. port-registry → port_registry, ip-pool-api → ip_pool_api).
+if [[ -z "${SCHEMA}" ]]; then
+  SCHEMA="${NAME//-/_}"
+  echo "[new-service] --schema not given; derived from name: '${SCHEMA}'" >&2
+fi
 
 [[ "${NAME}"   =~ ^[a-z][a-z0-9-]+$ ]] || { echo "[new-service] name must be kebab-case ([a-z][a-z0-9-]+)" >&2; exit 2; }
 [[ "${SCHEMA}" =~ ^[a-z][a-z0-9_]+$ ]] || { echo "[new-service] db-schema must be snake_case ([a-z][a-z0-9_]+)" >&2; exit 2; }
@@ -122,7 +136,19 @@ if [[ -n "${TOKEN_PREFIX}" ]]; then
   [[ "${TOKEN_PREFIX}" =~ ^[a-z]{2,4}$ ]] || { echo "[new-service] --prefix must be 2-4 lowercase letters" >&2; exit 2; }
 fi
 if [[ "${WITH_AUTH}" == "1" && -z "${TOKEN_PREFIX}" ]]; then
-  echo "[new-service] --with-auth requires --prefix=<2-4 lowercase letters>" >&2; exit 2
+  # Hint-only: don't pick a default silently — collisions in the prefix
+  # registry are a security smell. Suggest the literal first 3 chars,
+  # but require an explicit --prefix=.
+  suggested="$(echo "${NAME}" | tr -d -- '-' | cut -c1-3)"
+  cat >&2 <<EOF
+[new-service] --with-auth set but --prefix is missing.
+              Suggested:  --prefix=${suggested}   (first 3 letters of '${NAME}')
+              Override :  --prefix=<short alias>  (recommended for collision avoidance)
+
+              Operator-Pflicht: check the registry BEFORE picking a prefix:
+                api-standards/templates/service-skeleton/_optional/auth/PREFIX-REGISTRY.md
+EOF
+  exit 2
 fi
 if [[ -z "${DESC}" ]]; then
   echo "[new-service] no description given — README.md and package.json will use a placeholder; please replace before first commit" >&2
@@ -194,12 +220,16 @@ if [[ "${WITH_AUTH}" == "1" ]]; then
   substitute "${AUTH_DEST}"
 fi
 
-# --- git init -----------------------------------------------------------
-echo "[new-service] git init"
-( cd "${TARGET}" \
-  && git init -b main >/dev/null \
-  && git add -A \
-  && git commit -m "feat: initialise ${NAME} from api-standards/templates/service-skeleton" >/dev/null )
+# --- git init (skipped under --dry-run) --------------------------------
+if [[ "${DRY_RUN}" == "1" ]]; then
+  echo "[new-service] dry-run: skipping git init / commit"
+else
+  echo "[new-service] git init"
+  ( cd "${TARGET}" \
+    && git init -b main >/dev/null \
+    && git add -A \
+    && git commit -m "feat: initialise ${NAME} from api-standards/templates/service-skeleton" >/dev/null )
+fi
 
 # --- operator next-steps ------------------------------------------------
 cat <<EOF
@@ -248,3 +278,19 @@ cat <<EOF
   4) PM2:  pm2 start ecosystem.config.cjs && pm2 save
 
 EOF
+
+# --- dry-run cleanup ----------------------------------------------------
+if [[ "${DRY_RUN}" == "1" ]]; then
+  echo "[new-service] dry-run: removing ${TARGET}"
+  # Defensive: only remove paths under \$HOME/projects/, never anywhere else.
+  case "${TARGET}" in
+    "${HOME}/projects/"*)
+      rm -rf -- "${TARGET}"
+      echo "[new-service] dry-run: ✓ cleaned up; nothing left on disk"
+      ;;
+    *)
+      echo "[new-service] dry-run: refusing to rm outside \$HOME/projects (TARGET=${TARGET})" >&2
+      exit 1
+      ;;
+  esac
+fi

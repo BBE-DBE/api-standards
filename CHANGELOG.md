@@ -13,12 +13,32 @@ reproduzierbar von einem Skript-Aufruf aus generierbar.
 ### Added
 - `scripts/new-service.sh` — Flag-Parser für reproduzierbare Bootstraps:
   `--schema=`, `--port=`, `--prefix=` (alias `--token-prefix=`),
-  `--desc=`, `--with-auth`. Positional-Form bleibt funktional.
+  `--desc=`, `--with-auth`, `--dry-run`. Positional-Form bleibt
+  funktional. `--schema` ist optional und wird aus dem Service-Namen
+  abgeleitet (kebab → snake, `port-registry` → `port_registry`).
+- `--dry-run` Flag: führt alle Substitutionen + Validations durch,
+  überspringt git-init, löscht das Target-Verzeichnis am Ende
+  (defensiver Pfad-Guard: nur unter `$HOME/projects/`).
 - `templates/service-skeleton/_optional/auth/migration.sql` — opt-in
   Auth-Layer-Migration (api_keys + auth_failures + outbox), per
   `--with-auth` ins neue Service-Repo gespielt mit voll
-  substituiertem `__TOKEN_PREFIX__`. Reserve-Registry der Prefixe in
-  `_optional/auth/README.md`.
+  substituiertem `__TOKEN_PREFIX__`.
+- `templates/service-skeleton/_optional/auth/PREFIX-REGISTRY.md` —
+  globale Single Source of Truth für reservierte Bearer-Token-Prefixe
+  (Initial-Eintrag: `iplk_` → ip-pool-api v0.3.0). Operator-Pflicht:
+  vor neuer Vergabe konsultieren. Referenziert vom Skeleton-AGENTS.md
+  und vom `new-service.sh`-Hint-Output.
+- `templates/service-skeleton/src/plugins/metrics.ts` — opt-in
+  Wiring-Stub für prom-client. `app.ts` enthält den Aufruf
+  auskommentiert mit "Uncomment to enable". Metric-Name-Prefix nutzt
+  `__DB_SCHEMA__` (nicht `__SERVICE_NAME__`), um Prometheus-Spec
+  (`[a-zA-Z_:][a-zA-Z0-9_:]*`) bei kebab-case-Service-Namen
+  einzuhalten — siehe B13 in `docs/skeleton-bugs-found.md`.
+- `templates/service-skeleton/src/plugins/openapi.ts` — opt-in
+  Wiring-Stub für `@fastify/swagger` + `swagger-ui` +
+  `fastify-type-provider-zod`.
+- `PRINCIPLES.md` Sektion "Auth-Layer-Pattern" — argon2id-Begründung,
+  Token-Format, Reference-Implementation-Pointer (B12).
 - `templates/service-skeleton/db/migrations/001_init.sql` —
   `update_updated_at()`-Trigger-Funktion ergänzt; Folge-Migrations können
   sie ohne Re-Definition referenzieren.
@@ -29,11 +49,13 @@ reproduzierbar von einem Skript-Aufruf aus generierbar.
 - `PRINCIPLES.md` und `STANDARDS.md` (root) — vorher 0 Bytes; jetzt
   Landing-Page für Cross-Cuts (Pointer auf Workflows, Protocols, Mappings).
 - `docs/skeleton-bugs-found.md` — fortgesetzte Sammelstelle aller
-  Skeleton-Lücken, die bei realen Bootstraps auffallen. B1–B11
-  dokumentiert; B7 (`_optional/`-Wiring-Snippets für metrics/swagger) und
-  Teile von B9 (Auto-Repo-Erstellung) bleiben offen.
-- `docs/status-reports/skeleton-patches-2026.05.02.md` — Status-Report
-  zu diesem Patch (Trade-offs, 14-Dimensionen-Selbstcheck-Auszug).
+  Skeleton-Lücken, die bei realen Bootstraps auffallen. B1–B13
+  dokumentiert. B7 jetzt ✅ (Wiring-Stubs als `src/plugins/`).
+  Reste von B9 (auto-`gh repo create`/PM2) bleiben bewusst offen
+  (Operator-Sichtprüfung).
+- `docs/status-reports/api-standards-2026.05.02.md` — Status-Report
+  mit 14-Dimensionen-Selbstcheck und Mess-Daten. Re-Test mit
+  echtem `test-foundation`-Bootstrap (6/6 grün).
 
 ### Fixed
 - `templates/{audit-event-schema,error-codes,health-response-schema}.yaml`

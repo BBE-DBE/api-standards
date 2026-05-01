@@ -9,6 +9,11 @@ import { closeDb } from './db.js';
 import { AppError } from './lib/errors.js';
 import { registerHealth } from './routes/health.js';
 
+// Wiring stubs — opt-in. Uncomment the corresponding registration call
+// in buildApp() below to enable.
+// import { registerMetrics } from './plugins/metrics.js';
+// import { registerOpenApi } from './plugins/openapi.js';
+
 const startedAt = Date.now();
 
 export async function buildApp() {
@@ -44,6 +49,12 @@ export async function buildApp() {
   });
 
   await app.register(helmet, { global: true, contentSecurityPolicy: false });
+
+  // Uncomment to enable Prometheus /metrics (stub at src/plugins/metrics.ts):
+  // await registerMetrics(app);
+
+  // Uncomment to enable OpenAPI 3.1 + swagger-ui (stub at src/plugins/openapi.ts):
+  // await registerOpenApi(app);
 
   await registerHealth(app, { startedAt });
 

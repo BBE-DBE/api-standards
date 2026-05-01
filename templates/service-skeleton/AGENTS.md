@@ -12,3 +12,14 @@ When you (an agent) take an instruction in this repo:
 
 Service-specific exceptions live in [`PRINCIPLES.md`](PRINCIPLES.md) and
 [`STANDARDS.md`](STANDARDS.md).
+
+## If this service authenticates callers (i.e. has its own bearer tokens)
+
+Before minting any new key or writing `auth.ts`:
+
+1. Read
+   [`api-standards/templates/service-skeleton/_optional/auth/PREFIX-REGISTRY.md`](https://github.com/BBE-DBE/api-standards/blob/main/templates/service-skeleton/_optional/auth/PREFIX-REGISTRY.md)
+   end-to-end. Prefixes are global, not per-service.
+2. If the prefix this service plans to use is not in the registry,
+   add a row in the **same change** that introduces the auth code.
+3. If a prefix conflict is found, stop and ask the operator.

@@ -156,6 +156,24 @@ ausführen, fehleranfällig.
   ein Skript darf nicht autonom `gh repo create` für ein Konto laufen
   lassen, wenn der Operator den Namen oder die Sichtbarkeit ändern will).
 
+## B13 — `__SERVICE_NAME__` in Prometheus-Metric-Name verletzt Spec
+
+**Befund:** Erste Version von `templates/service-skeleton/src/plugins/metrics.ts`
+nutzte `__SERVICE_NAME___http_request_*` als Metric-Name. Prometheus
+fordert `[a-zA-Z_:][a-zA-Z0-9_:]*` — also keine Hyphens. Bei einem
+Service-Namen wie `test-foundation` ergäbe die Substitution
+`test-foundation_http_request_*` und Prometheus würde den Namen
+ablehnen (oder schlimmer: das prom-client-Lib akzeptiert ihn lokal,
+aber Server-side-Scraper brechen ein).
+
+**Risiko:** mittel — die Library prom-client validiert Namen erst beim
+Registrieren; lokaler Build wirft, aber wer den Skeleton ohne erste
+Test-Registrierung deployt, sieht das Problem erst in Prod.
+
+**Action:** fixed-in 2026.05.02 — Metric-Name-Prefix verwendet
+`__DB_SCHEMA__` (per Validation snake_case) statt `__SERVICE_NAME__`.
+Konventions-Kommentar im File ergänzt.
+
 ## B11 — Schema-Suffix `_svc` kollidiert mit PGUSER-Konvention
 
 **Befund:** `.env.example` setzt `PGUSER=__DB_SCHEMA___svc`. Sed

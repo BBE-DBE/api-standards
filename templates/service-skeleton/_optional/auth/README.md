@@ -7,7 +7,7 @@ service has no auth code by default).
 
 ## What `--with-auth` does
 
-When invoked with `--with-auth --token-prefix=<2-4 lowercase letters>`,
+When invoked with `--with-auth --prefix=<2-4 lowercase letters>`,
 `new-service.sh` performs these extra steps after the standard skeleton
 copy:
 
@@ -15,9 +15,8 @@ copy:
    `db/migrations/002_auth.sql` of the new service.
 2. Substitutes `__SERVICE_NAME__`, `__DB_SCHEMA__`, `__TOKEN_PREFIX__`
    in the copied file.
-3. Adds the operator-TODO line:
-   "implement src/auth.ts based on
-   `BBE-DBE/ip-pool-api/src/auth.ts` (~325 LoC)".
+3. Adds operator-TODO lines pointing at the reference TS implementation
+   (`BBE-DBE/ip-pool-api/src/auth.ts`, ~325 LoC) and the registry.
 
 ## What `--with-auth` does NOT do
 
@@ -41,12 +40,10 @@ generalises, the snippet will move here in a later calver.
 
 ## Token-prefix collision guard
 
-Reserve a 2-4-letter lowercase prefix per service. Current registry:
+The single source of truth for prefix reservations is
+**[`PREFIX-REGISTRY.md`](PREFIX-REGISTRY.md)** in this folder. Operators
+**must** consult it before picking a prefix and append a row in the
+same change as the new service.
 
-| Prefix  | Service       | Note              |
-|---------|---------------|-------------------|
-| `iplk_` | ip-pool-api   | reserved 2026.04  |
-| `prr_`  | port-registry | reserved 2026.05  |
-
-When adding a new prefix, append it here in the same PR that bumps
-api-standards calver.
+`new-service.sh --with-auth` without `--prefix` does NOT pick a default
+silently — it prints a hint pointing to the registry and exits non-zero.
