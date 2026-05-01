@@ -213,6 +213,91 @@ Token-Prefix-Validierung: `^[a-z]{2,4}$` (analog `iplk`, `prr`).
 
 ---
 
+## B14 — `pnpm tsc --noEmit` schlägt standalone fehl (gitignored generated import)
+
+**Befund:** `src/lib/build-version.ts` macht
+`await import('./git-sha.js')`. Die Datei `src/lib/git-sha.ts` ist
+**gitignored** und wird erst von `scripts/build.sh` zur Build-Zeit
+generiert. Folge: ein frisch geclontes Repo kann `pnpm tsc --noEmit`
+nicht ausführen — der TypeScript-Modulauflöser findet `./git-sha.js`
+nicht und bricht mit `TS2307` ab. `pnpm build` (das build.sh aufruft)
+funktioniert, ist aber kein reiner Typecheck mehr.
+
+Reproduktion (am 2026-05-01 in port-registry):
+```
+$ pnpm tsc --noEmit
+src/lib/build-version.ts(27,30): error TS2307:
+  Cannot find module './git-sha.js' or its corresponding type declarations.
+```
+
+**Risiko:** CI-Jobs, die `tsc --noEmit` als Quality-Gate fahren (typischer
+Lint-Step), schlagen vor dem ersten `pnpm build` immer fehl. Agenten
+folgen dem Plan-Validation-Step "tsc --noEmit grün" und müssen ad-hoc
+auf `pnpm build` ausweichen.
+
+**Action:** `build-version.ts` umbauen so, dass `git-sha.ts` rein
+runtime-conditional gelesen wird (z.B. via `process.env.GIT_SHA` als
+Primärquelle und `fs.readFileSync('./git-sha.json')` JSON-Datei statt
+TS-Modul). Alternative: ein `src/lib/git-sha.ts.template` mit
+`export const GIT_SHA = 'unknown';` als Fallback ins Repo einchecken
+(nicht gitignored), das build.sh überschreibt. ETA 2026.05.0X.
+
+---
+
+## B15 — `AGENTS.md`-Pin-Floor wird beim Bootstrap nicht auf aktuellen calver substituiert
+
+**Befund:** Frisch gebootstraptes `port-registry/AGENTS.md` enthält
+*literal*: "Pinned standards version: **>= 2026.04.30** (or whatever the
+current calver is on the day this skeleton was generated)." — der
+Klammer-Hinweis bestätigt, dass die Substitution gewollt ist, aber
+`new-service.sh` führt sie nicht durch. Der Wert `2026.04.30` ist im
+Skeleton-Source hartkodiert und altert.
+
+Reproduktion: Bootstrap am 2026-05-01 (api-standards-Tag `2026.05.02` aktiv) ⇒
+AGENTS.md zeigt weiterhin `>= 2026.04.30`. Erwartet wäre `>= 2026.05.02`
+(höchster im Source-Repo erreichbarer Tag) oder `>= <current calver>`.
+
+**Risiko:** Reproduzierbarkeit-Lücke. Ein Agent, der den Pin liest,
+glaubt der Service sei kompatibel mit allem ab 2026.04.30, obwohl die
+Foundation bei der Generierung bereits einen jüngeren, schärferen Tag
+verlangt hätte. Drift zwischen Pin-Floor und tatsächlich genutzter
+Foundation-Version.
+
+**Action:** `new-service.sh` substituiert `__STANDARDS_PIN_FLOOR__` o.ä.
+gegen `git -C <skeleton-source> describe --tags --abbrev=0` zur
+Bootstrap-Zeit. Optional zusätzlich eine Datei
+`.api-standards-version` mit dem exakten Tag schreiben (für
+Drift-Checks). ETA 2026.05.0X.
+
+---
+
+## Tooling-Beobachtung (kein Skeleton-Bug, infra-postgres) — Naming-Drift in `add-service-schema.sh`
+
+**Befund:** `infra-postgres@v0.1.3 scripts/add-service-schema.sh`
+liest `POSTGRES_USER` und `POSTGRES_PASSWORD` aus `.env`, aber das
+gepflegte `~/projects/infra-postgres/.env` (Stand 2026-05-01) definiert
+**stattdessen** `POSTGRES_SUPER_USER` / `POSTGRES_SUPER_PASSWORD`.
+Folge: ohne explizite Subshell-Umbenennung exit 1 mit
+*"POSTGRES_PASSWORD not in env or .env — cannot connect as superuser"*.
+
+Workaround beim port-registry-Bootstrap (2026-05-01):
+```
+( cd ~/projects/infra-postgres
+  set -a; . ./.env; set +a
+  export POSTGRES_USER="$POSTGRES_SUPER_USER"
+  export POSTGRES_PASSWORD="$POSTGRES_SUPER_PASSWORD"
+  SVC_PASSWORD=... bash scripts/add-service-schema.sh ... )
+```
+
+**Action (infra-postgres-Repo, nicht api-standards):** Naming
+vereinheitlichen — entweder Script auf `POSTGRES_SUPER_*` umstellen
+oder `.env` auf `POSTGRES_USER`/`POSTGRES_PASSWORD` umbenennen. Der
+zweite Weg kollidiert weniger mit Postgres-Container-Defaults. Kein
+api-standards-Fix nötig; nur hier dokumentiert weil's die nächste
+Bootstrap-Welle blockiert hätte.
+
+---
+
 ## Zukünftige Bug-Klassen, die wir hier tracken
 
 Wenn beim Bootstrap eines neuen Service **weitere** Lücken auffallen:
