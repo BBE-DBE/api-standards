@@ -21,40 +21,60 @@ disk. PRINCIPLES.md §8 (Reuse-First) requires `SERVICES.yaml` for
 
 ### What it sends
 
-`POST {PORT_REGISTRY_URL}/v1/register` with body:
+`POST {PORT_REGISTRY_URL}/v1/services/register` with body:
 
 ```json
 {
-  "name": "<service short-name from SERVICES.yaml>",
-  "version": "<semver from package.json>",
-  "host": "<hostname or routable IP>",
-  "port": <integer>,
-  "manifest_url": "http://<host>:<port>/service-manifest",
-  "openapi_url":  "http://<host>:<port>/openapi.json",
-  "build_version": "<git short SHA>",
-  "started_at":    "<ISO-8601 UTC>",
-  "process_id":    <int>,
-  "registration_ttl_seconds": 60
+  "name":          "<service short-name from SERVICES.yaml>",
+  "version":       "<semver from package.json>",
+  "repo":          "BBE-DBE/<repo>",
+  "role":          "service",
+  "port":          <integer>,
+  "base_url":      "http://<host>:<port>",
+  "health_url":    "http://<host>:<port>/health",
+  "openapi_url":   "http://<host>:<port>/openapi.json",
+  "manifest_url":  "http://<host>:<port>/service-manifest",
+  "auth_required": true,
+  "status":        "active",
+  "capabilities":  ["…"],
+  "dependencies":  [{ "name": "…", "version": ">=…", "status": "required|optional" }],
+  "metadata":      { },
+  "ttl_seconds":   60
 }
 ```
 
 Headers:
-- `Authorization: Bearer <port-registry-token>` (issued by port-registry,
+- `Authorization: Bearer <port-registry-token>` (scope `services:write`,
   stored in service's `.env` as `PORT_REGISTRY_TOKEN`).
-- `Idempotency-Key: <uuid-v7>` (so a registration retry is safe).
+- `Idempotency-Key: <uuid-v7>` (so a registration retry is safe). Both
+  `Idempotency-Key` and `X-Idempotency-Key` are accepted as aliases per
+  [`idempotency-header-compat.md`](idempotency-header-compat.md).
+
+Response: `201 Created` on first registration, `200 OK` on
+re-registration of the same `name` (UPSERT semantics).
 
 ### Heartbeat
 
-`POST {PORT_REGISTRY_URL}/v1/heartbeat/{run_id}` every
-`registration_ttl_seconds / 3` (default: 20 s).
-Body: `{}`. The registry treats a missed heartbeat after
-`registration_ttl_seconds` as deregistration.
+`POST {PORT_REGISTRY_URL}/v1/services/heartbeat` every
+`ttl_seconds / 3` (default: 20 s) with body:
+
+```json
+{ "name": "<service-name>", "status": "active",
+  "health": { /* arbitrary */ }, "metadata": { } }
+```
+
+The registry treats a missed heartbeat after `ttl_seconds` as
+liveness expiry — `is_live` flips to `false` in `/v1/services` /
+`/v1/capabilities` responses, but the row itself stays so historical
+audit + capability data remains queryable.
 
 ### Graceful shutdown
 
-`POST {PORT_REGISTRY_URL}/v1/deregister/{run_id}` on SIGTERM, before
-draining. Best-effort — registry tolerates missing deregistration via
-the heartbeat-TTL fallback.
+`POST {PORT_REGISTRY_URL}/v1/services/deregister` on SIGTERM, before
+draining, with body `{ "name": "<service-name>" }`. The registry
+tombstones the service to `status='retired'` (no DELETE — capability
+history stays). Best-effort — registry tolerates missing deregistration
+via the heartbeat-TTL fallback.
 
 ### Failure mode
 
