@@ -57,6 +57,38 @@ reproduzierbar von einem Skript-Aufruf aus generierbar.
   mit 14-Dimensionen-Selbstcheck und Mess-Daten. Re-Test mit
   echtem `test-foundation`-Bootstrap (6/6 grün).
 
+#### Architecture-Completion (2026-05-02 evening, branch `feat/architecture-completion-2026-05-02`)
+- `SERVICES.yaml` — root-level service catalog. Single source of truth
+  for "which BBE-DBE services exist, what can they do, in what order
+  do agents reuse them?". 11 services indexed (foundation, service,
+  frontend, bridge tiers) with port, openapi_url, manifest_url,
+  capabilities, reuse_priority. Anchored from PRINCIPLES.md §8.
+- `PRINCIPLES.md` §8 **Reuse-First / Lookup-before-Build** — new
+  inherited principle that mandates `SERVICES.yaml` consultation
+  before any new capability. Violations are compliance bugs.
+- `PRINCIPLES.md` §9 **Self-Registration** — new inherited principle
+  that mandates port-registry registration on startup and
+  `/service-manifest` exposure.
+- `protocols/service-self-registration.md` — registration / heartbeat
+  / deregistration contract for port-registry. Contract-only, no
+  implementation here.
+- `protocols/service-manifest.md` — `/service-manifest` endpoint
+  schema (name, version, capabilities, dependencies, openapi_url,
+  auth, idempotency, health, metrics_url, compliance, links).
+- `protocols/idempotency-header-compat.md` — both `Idempotency-Key`
+  AND `X-Idempotency-Key` MUST be accepted as aliases; conflict on
+  divergent values rejected with `idempotency_header_conflict`.
+- `protocols/provider-adapter-interface.md` — minimal `ProviderAdapter`
+  TypeScript surface and cross-cutting obligations (retries,
+  rate-limit, error mapping, audit, multi-base). Initial consumers:
+  netcup-api, hetzner-api.
+- `checklists/14-dimensions.md` §5 + §13 extended with: service-reuse
+  verification, dual-header idempotency, /service-manifest, self-
+  registration, SERVICES.yaml lookup.
+- `docs/status-reports/hetzner-api-gaps.md` — gap snapshot for
+  hetzner-api at branch `release/v1.0.0` tip `adab95d`. **No code
+  changes to hetzner-api**; this is documentation only.
+
 ### Fixed
 - `templates/{audit-event-schema,error-codes,health-response-schema}.yaml`
   (0-Byte-Stubs) entfernt — Quelle der Wahrheit ist `protocols/`.

@@ -38,10 +38,11 @@ Pflicht nach jedem Build. Status: ✅ · 🟡 (Lücke benannt) · ❌ · ➖ (ni
 
 ## 5. Modularität
 - [ ] Plugin-System mit explizitem Allowlist-Mechanismus
-- [ ] Provider-Adapter über Interface, austauschbar
+- [ ] Provider-Adapter über Interface, austauschbar (siehe `protocols/provider-adapter-interface.md`)
 - [ ] Service-Boundaries klar (DB-Schema pro Service)
 - [ ] Keine zirkulären Dependencies
 - [ ] Eine Verantwortung pro Komponente (max ~200 LoC pro File)
+- [ ] **Service-Reuse verifiziert vor neuer Implementierung** (Lookup in `SERVICES.yaml` dokumentiert; bei Treffer mit niedrigerem `reuse_priority` MUSS das bestehende Service konsumiert werden, nicht reimplementiert)
 
 ## 6. Kompatibilität
 - [ ] OpenAPI 3.1 als Single Source of Truth
@@ -105,8 +106,12 @@ Pflicht nach jedem Build. Status: ✅ · 🟡 (Lücke benannt) · ❌ · ➖ (ni
 - [ ] Alle Endpoints headless nutzbar
 - [ ] Maschinenlesbare Error-Codes (stable `code`-Feld)
 - [ ] Idempotency-Key + run_id Pflicht für Mutations
+- [ ] **Idempotency akzeptiert beide Header** (`Idempotency-Key` und `X-Idempotency-Key`, siehe `protocols/idempotency-header-compat.md`)
 - [ ] Bootstrap headless möglich
 - [ ] Plugin-Allowlist via config
+- [ ] **`/service-manifest` Endpoint** liefert maschinenlesbares Capability-Manifest (siehe `protocols/service-manifest.md`)
+- [ ] **Service-Self-Registration** bei `port-registry` beim Boot (siehe `protocols/service-self-registration.md`)
+- [ ] **`SERVICES.yaml`-Lookup** dokumentiert: vor jeder neuen Capability geprüft, ob bestehendes Service bereits passt
 
 ## 14. Lebenszyklus
 - [ ] Migrations immutable (SHA-256-Drift-Check)

@@ -23,6 +23,22 @@ listed in
 7. **State of the Art.** Strict TypeScript; immutable migrations with
    SHA-256 drift detection; structured pino logging; UUIDv7 externally,
    BIGSERIAL internally; Prometheus metrics; graceful shutdown.
+8. **Reuse-First / Lookup-before-Build.** Before any new capability is
+   implemented, the catalog at [`SERVICES.yaml`](SERVICES.yaml) MUST be
+   consulted. If an existing service already exposes the capability
+   (matching `services[*].capabilities`), the new code MUST consume it
+   over HTTP — never copy logic, never re-implement. Cross-cutting
+   concerns (auth, idempotency, errors, health, metrics, audit) MUST
+   reuse the protocols under [`protocols/`](protocols/) and the
+   reference implementation in `BBE-DBE/ip-pool-api`. Violations are a
+   compliance bug, not a style preference. Workflow enforcement lives in
+   [`checklists/14-dimensions.md`](checklists/14-dimensions.md) §5 + §13
+   and in the bootstrap checklist.
+9. **Self-Registration.** Every network-bound service MUST register
+   itself with `port-registry` on startup and expose
+   `/service-manifest` (see [`protocols/service-manifest.md`](protocols/service-manifest.md)).
+   This is what makes principle 8 mechanically possible: agents discover
+   capabilities at runtime, not by reading source code.
 
 ## Workflow (mandatory)
 

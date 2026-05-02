@@ -1,0 +1,222 @@
+# SERVICES.yaml — BBE-DBE Service Catalog
+#
+# Single source of truth for "which services exist in the BBE-DBE ecosystem".
+# Every agent MUST consult this file BEFORE proposing or implementing a new
+# capability (see PRINCIPLES.md §8 "Reuse-First / Lookup-before-Build").
+#
+# Schema: each entry under `services:` keyed by short-name with fields:
+#   role            foundation | service | frontend | bridge
+#   repo            github short ref BBE-DBE/<repo>
+#   port            local-loopback TCP port (null if not a network service)
+#   openapi_url     where the openapi.yaml is reachable when the service runs
+#                   (null if not yet published / not applicable)
+#   openapi_path    relative path inside the repo
+#   manifest_url    /service-manifest endpoint (see protocols/service-manifest.md)
+#   capabilities    coarse list — what an agent can ASK this service to do
+#   reuse_priority  lower numbers = MUST be checked first when building
+#                   adjacent functionality. 0 = foundation, no alternative.
+#   status          prod | rc | dev | skeleton | planned
+#   version         current released or active version
+#   notes           short free-form
+#
+# Last verified: 2026-05-02
+
+version: 1
+catalog_updated: "2026-05-02"
+
+services:
+
+  # ─── Foundation tier (reuse_priority 0–1) ────────────────────────
+  api-standards:
+    role: foundation
+    repo: BBE-DBE/api-standards
+    port: null
+    openapi_url: null
+    openapi_path: null
+    manifest_url: null
+    capabilities:
+      - principles
+      - checklists
+      - protocols
+      - service-skeleton-template
+      - iso-mappings
+    reuse_priority: 0
+    status: prod
+    version: "2026.04.30"
+    notes: "This catalog lives here. Every service pins a min version."
+
+  infra-postgres:
+    role: foundation
+    repo: BBE-DBE/infra-postgres
+    port: 5432
+    openapi_url: null
+    openapi_path: null
+    manifest_url: null
+    capabilities:
+      - postgres-cluster
+      - migration-runner
+      - sha256-drift-detection
+    reuse_priority: 0
+    status: prod
+    version: "0.1.3"
+    notes: "Shared DB layer. Services connect, never run their own pg."
+
+  port-registry:
+    role: foundation
+    repo: BBE-DBE/port-registry
+    port: 5099
+    openapi_url: "http://127.0.0.1:5099/openapi.json"
+    openapi_path: openapi.yaml
+    manifest_url: "http://127.0.0.1:5099/service-manifest"
+    capabilities:
+      - service-discovery
+      - service-self-registration
+      - port-allocation
+      - heartbeat
+    reuse_priority: 0
+    status: prod
+    version: "0.1.0"
+    notes: "MUST be queried at startup by every other service. See protocols/service-self-registration.md"
+
+  bbe-server-config:
+    role: foundation
+    repo: BBE-DBE/bbe-server-config
+    port: null
+    openapi_url: null
+    openapi_path: null
+    manifest_url: null
+    capabilities:
+      - server-hardening
+      - sshd-config
+      - ufw-defaults
+      - sudoers-management
+    reuse_priority: 0
+    status: rc
+    version: "0.4.0-rc"
+    notes: "Hard-gate: multipass-test"
+
+  server-bootstrap:
+    role: foundation
+    repo: BBE-DBE/server-bootstrap
+    port: null
+    openapi_url: null
+    openapi_path: null
+    manifest_url: null
+    capabilities:
+      - debian-13-provisioner
+      - tier-aware-provisioning
+      - module-runner
+    reuse_priority: 0
+    status: prod
+    version: "0.1.0"
+    notes: "Public Debian-13 provisioner. Runs BEFORE bbe-server-config."
+
+  # ─── Service tier (reuse_priority 2–3) ───────────────────────────
+  ip-pool-api:
+    role: service
+    repo: BBE-DBE/ip-pool-api
+    port: 5340
+    openapi_url: "http://127.0.0.1:5340/openapi.json"
+    openapi_path: openapi.yaml
+    manifest_url: "http://127.0.0.1:5340/service-manifest"
+    capabilities:
+      - ip-reservation
+      - ip-release
+      - ip-import
+      - pool-listing
+    reuse_priority: 2
+    status: prod
+    version: "0.3.0"
+    notes: "Reference implementation for argon2id auth + idempotency. PRINCIPLES.md cites it."
+
+  netcup-api:
+    role: service
+    repo: BBE-DBE/netcup-api
+    port: 5350
+    openapi_url: "http://127.0.0.1:5350/openapi.json"
+    openapi_path: openapi.yaml
+    manifest_url: "http://127.0.0.1:5350/service-manifest"
+    capabilities:
+      - netcup-server-mgmt
+      - netcup-dns-mutations
+      - policy-engine
+      - admin-credentials
+    reuse_priority: 2
+    status: prod
+    version: "0.1.0"
+    notes: "Provider adapter (Netcup). Pushes IPs into ip-pool-api via sinks/."
+
+  hetzner-api:
+    role: service
+    repo: BBE-DBE/hetzner-api
+    port: 5110
+    openapi_url: null
+    openapi_path: null
+    manifest_url: null
+    capabilities:
+      - hetzner-storage-boxes
+      - hetzner-cloud-servers   # planned, day-2
+    reuse_priority: 2
+    status: dev
+    version: "0.1.0"
+    notes: "Active branch release/v1.0.0, day-1 closure in progress. See docs/status-reports/hetzner-api-gaps.md"
+
+  bbe-coord:
+    role: service
+    repo: BBE-DBE/bbe-coord
+    port: 5111
+    openapi_url: null
+    openapi_path: null
+    manifest_url: null
+    capabilities:
+      - cross-service-coordination
+    reuse_priority: 3
+    status: skeleton
+    version: "0.0.0"
+    notes: "Skeleton only. No surface yet."
+
+  # ─── Frontend / Bridge tier ──────────────────────────────────────
+  bbe-frontend:
+    role: frontend
+    repo: BBE-DBE/bbe-frontend
+    port: null
+    openapi_url: null
+    openapi_path: null
+    manifest_url: null
+    capabilities:
+      - design-tokens
+      - ui-components
+      - astro-lit-monorepo
+    reuse_priority: 1
+    status: rc
+    version: "ui@0.2.0"
+    notes: "Asset library. packages/{tokens,ui}. Every UI consumes from here."
+
+  adam-eve-bridge:
+    role: bridge
+    repo: BBE-DBE/adam-eve-bridge
+    port: null
+    openapi_url: null
+    openapi_path: null
+    manifest_url: null
+    capabilities:
+      - inter-system-bridge
+    reuse_priority: 4
+    status: dev
+    version: "unspecified"
+    notes: "Bridge component, scope TBD."
+
+# ─── Lookup hint for agents ─────────────────────────────────────────
+# Before implementing ANY new capability, scan `services[*].capabilities`
+# for a match. If a match exists with reuse_priority < your service, you
+# MUST consume the existing service rather than re-implement.
+#
+# Lookup-before-Build is enforced by PRINCIPLES.md §8 and
+# checklists/14-dimensions.md §5 + §13.
+
+reuse_lookup_protocol:
+  step_1: "Read this file."
+  step_2: "Scan services[*].capabilities for the verb you intend to implement."
+  step_3: "If found at lower reuse_priority → consume it (HTTP, not copy)."
+  step_4: "If not found → propose a capability extension to the matching service first."
+  step_5: "Only if step 4 is rejected by the operator: build new."
