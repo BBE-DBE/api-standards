@@ -12,6 +12,18 @@ specific deviations live in each service's own `STANDARDS.md`.
 | Health response shapes | [`protocols/health-response-schema.yaml`](protocols/health-response-schema.yaml)      |
 | Secrets vault        | [`protocols/secrets-vault.md`](protocols/secrets-vault.md)                              |
 
+## Ratified standards registry
+
+| Standard ID  | Title                            | Version    | Status                          | Location                                                                  |
+|--------------|----------------------------------|------------|---------------------------------|---------------------------------------------------------------------------|
+| BBE-STD-002  | Agent Communication Protocol     | v1.0-RC2   | RELEASE-CANDIDATE-2 (pending ratification — see `OPEN_ISSUES-RC2.md`) | [`standards/BBE-STD-002/`](standards/BBE-STD-002/) |
+
+**BBE-STD-002 notes:**
+- Runtime-agnostic per [ADR-0003](standards/BBE-STD-002/docs/adr/0003-runtime-agnostic-posture.md). The BBE deployment runtime binding lives in `bbe-server-config/configs/bbe-guard/`.
+- HMAC-anchored authorization sits at L4. L5 (signature/ledger/attestation) reserved for the deferred BBE-STD-003.
+- Reference linter + CLI: `standards/BBE-STD-002/tools/bbe-comm/`. Run `scripts/test-std-002.sh` for the ratification gate.
+- Phase D rollout: 14-day warning window 2026-05-13 → 2026-05-27; hard floors take effect 2026-05-28.
+
 ## Hard rules (every service)
 
 1. **127.0.0.1 only.** Service binds loopback. TLS via Caddy in front;
