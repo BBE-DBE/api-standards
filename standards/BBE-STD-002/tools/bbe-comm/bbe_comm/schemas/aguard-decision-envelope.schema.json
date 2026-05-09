@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bbe-dbe:bbe-comm:aguard-decision-envelope:v1.0",
+  "title": "AGUARD Decision Envelope (bbe-comm → AGUARD/ENG-001 contract)",
+  "description": "Wire format that bbe-comm emits for consumption by the AGUARD reference runtime or any equivalent decision engine (e.g. future ENG-001). The envelope is bbe-comm's structural verdict on a textual region; the runtime MUST treat it as one input among many and MUST NOT use it alone as authorization.",
+  "type": "object",
+  "required": ["schema_version", "issued_at", "subcommand", "decision", "reason",
+               "block_count", "content_hash"],
+  "properties": {
+    "schema_version": {"type": "string", "pattern": "^\\d+\\.\\d+$"},
+    "issued_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "subcommand": {"type": "string"},
+    "decision": {
+      "enum": ["allow", "allow-with-warnings", "warn", "deny"],
+      "description": "STRUCTURAL verdict only. Runtime decides the final action."
+    },
+    "reason": {"type": "string", "maxLength": 500},
+    "block_count": {"type": "integer", "minimum": 0},
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{16}$",
+      "description": "SHA-256[:16] over (label, type, id) tuples. Stable identifier of the input."
+    },
+    "correlation_id": {"type": ["string", "null"]},
+    "file": {"type": ["string", "null"]},
+    "lint_summary": {
+      "type": "object",
+      "properties": {
+        "errors": {"type": "integer", "minimum": 0},
+        "warnings": {"type": "integer", "minimum": 0},
+        "by_check_id": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 0}
+        },
+        "load_bearing_failures": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^BBE-COMM-\\d{3}$"},
+          "description": "Subset of failed checks that map to incident-level violations: 015, 016, 022, 024, 025."
+        }
+      }
+    },
+    "advisory": {
+      "type": "string",
+      "description": "Mandatory human-readable disclaimer. Reminds the runtime not to treat this envelope as authorization."
+    }
+  },
+  "additionalProperties": false
+}

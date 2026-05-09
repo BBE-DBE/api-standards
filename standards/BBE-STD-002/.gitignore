@@ -1,0 +1,7 @@
+# bbe-comm runtime artifacts (never committed)
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+# bbe-comm learning store (host-local, contains hashes of operator activity)
+tools/bbe-comm/data/

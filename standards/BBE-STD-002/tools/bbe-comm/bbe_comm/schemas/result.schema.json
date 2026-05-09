@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bbe-dbe:bbe-comm:result:v1.0",
+  "title": "bbe-comm Result envelope",
+  "description": "Stable wire format for the output of every bbe-comm subcommand. Versioned via $id; breaking changes require MAJOR bump.",
+  "type": "object",
+  "required": ["schema_version", "bbe_comm_version", "subcommand", "blocks", "exit_code"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Version of THIS result-envelope schema."
+    },
+    "bbe_comm_version": {
+      "type": "string",
+      "description": "Version of the bbe-comm package that produced this Result."
+    },
+    "subcommand": {
+      "type": "string",
+      "enum": ["lint", "score", "trace", "explain", "repair-suggest",
+               "normalize", "emit", "verify-hmac", "incident-test",
+               "auth-check", "integrate-guard", "learn", "report", "adapt"]
+    },
+    "file": {"type": ["string", "null"]},
+    "blocks": {"type": "integer", "minimum": 0},
+    "findings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/Finding"}
+    },
+    "scores": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/ScoreResult"}
+    },
+    "trace": {
+      "anyOf": [{"$ref": "#/$defs/TraceResult"}, {"type": "null"}]
+    },
+    "auth": {
+      "anyOf": [{"$ref": "#/$defs/AuthCheckResult"}, {"type": "null"}]
+    },
+    "incident": {
+      "anyOf": [{"$ref": "#/$defs/IncidentResult"}, {"type": "null"}]
+    },
+    "suggestions": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/RepairSuggestion"}
+    },
+    "extra": {"type": "object"},
+    "exit_code": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "0 success / 1 lint failed / 2 security violation / 3 lineage error / 4 auth-inference attempt / 5 runtime error"
+    }
+  },
+  "$defs": {
+    "Finding": {
+      "type": "object",
+      "required": ["check_id", "severity", "section", "message", "line"],
+      "properties": {
+        "check_id": {"type": "string", "pattern": "^BBE-COMM-\\d{3}$"},
+        "severity": {"enum": ["error", "warning", "info"]},
+        "section":  {"type": "string"},
+        "message":  {"type": "string"},
+        "line":     {"type": "integer", "minimum": 1},
+        "block_label": {"type": ["string", "null"]},
+        "file":     {"type": ["string", "null"]}
+      }
+    },
+    "ScoreResult": {
+      "type": "object",
+      "required": ["block_label", "computed_level", "over_claim", "rationale"],
+      "properties": {
+        "block_label": {"type": "string"},
+        "block_id":    {"type": ["string", "null"]},
+        "block_type":  {"type": ["string", "null"]},
+        "declared_level": {"type": ["integer", "null"], "minimum": 0, "maximum": 5},
+        "computed_level": {"type": "integer", "minimum": 0, "maximum": 5},
+        "over_claim":  {"type": "boolean"},
+        "rationale":   {"type": "string"}
+      }
+    },
+    "TraceEdge": {
+      "type": "object",
+      "required": ["src", "dst", "kind"],
+      "properties": {
+        "src":  {"type": "string"},
+        "dst":  {"type": "string"},
+        "kind": {"enum": ["parent", "correlation", "ref"]}
+      }
+    },
+    "TraceResult": {
+      "type": "object",
+      "required": ["nodes", "edges", "cycles", "orphans", "ok"],
+      "properties": {
+        "nodes":   {"type": "array", "items": {"type": "string"}},
+        "edges":   {"type": "array", "items": {"$ref": "#/$defs/TraceEdge"}},
+        "cycles":  {"type": "array", "items": {"type": "array", "items": {"type": "string"}}},
+        "orphans": {"type": "array", "items": {"type": "string"}},
+        "correlation_groups": {
+          "type": "object",
+          "additionalProperties": {"type": "array", "items": {"type": "string"}}
+        },
+        "ok": {"type": "boolean"}
+      }
+    },
+    "AuthCheckResult": {
+      "type": "object",
+      "required": ["has_operator_auth_block", "verdict", "exit_code"],
+      "properties": {
+        "has_operator_auth_block": {"type": "boolean"},
+        "operator_auth_count":     {"type": "integer", "minimum": 0},
+        "prose_auth_inference_detected": {"type": "boolean"},
+        "inference_evidence":      {"type": "array", "items": {"type": "string"}},
+        "auth_block_ids":          {"type": "array", "items": {"type": "string"}},
+        "verdict": {"enum": ["valid-auth", "no-auth", "prose-only-inference"]},
+        "exit_code": {"type": "integer", "minimum": 0, "maximum": 5}
+      }
+    },
+    "IncidentResult": {
+      "type": "object",
+      "required": ["pattern_detected", "verdict", "exit_code"],
+      "properties": {
+        "pattern_detected":     {"type": "boolean"},
+        "matches":              {"type": "array"},
+        "has_authorizing_block": {"type": "boolean"},
+        "verdict": {"enum": ["no-pattern", "pattern-with-auth", "pattern-without-auth"]},
+        "exit_code": {"type": "integer", "minimum": 0, "maximum": 5}
+      }
+    },
+    "RepairSuggestion": {
+      "type": "object",
+      "required": ["finding", "fix_kind", "description", "patch_hint", "confidence"],
+      "properties": {
+        "finding":     {"$ref": "#/$defs/Finding"},
+        "fix_kind":    {"enum": ["add-field", "rename-field", "fix-value", "add-block", "split-block"]},
+        "description": {"type": "string"},
+        "patch_hint":  {"type": "string"},
+        "confidence":  {"enum": ["high", "medium", "low"]}
+      }
+    }
+  },
+  "additionalProperties": false
+}
