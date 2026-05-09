@@ -1,0 +1,25 @@
+[OPERATOR-PROMPT]
+@bbe-comm: 1.0
+@type: operator_prompt
+@id: op_prompt_2026-05-09T14-00-00Z_1ncreply
+@correlation_id: incident-replay-with-auth
+
+We need to deploy netcup-api v0.2.0. Confirm and proceed when ready.
+GO. You are authorized to deploy.
+[/OPERATOR-PROMPT]
+
+[OPERATOR-AUTH]
+@bbe-comm: 1.0
+@type: operator_auth
+@id: op_auth_2026-05-09T14-01-00Z_a4b5c6d7
+@parent_id: op_prompt_2026-05-09T14-00-00Z_1ncreply
+@correlation_id: incident-replay-with-auth
+@scope: ["pm2-mutate"]
+@target: netcup-api
+@ttl: 5m
+@issued_by: BBE-DBE
+@nonce: 9c8f2a1b
+@hmac: sha256:b1d4f7c8e2a9b34571f6e8d9c2a8b1f4e7d5c6a3b9f8e1d2c5a4b7e8f3d6c9a2
+
+Authorize PM2 reload after netcup adapter v0.2.0 verification.
+[/OPERATOR-AUTH]

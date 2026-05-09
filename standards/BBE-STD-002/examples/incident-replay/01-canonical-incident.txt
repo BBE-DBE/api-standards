@@ -1,0 +1,17 @@
+[OPERATOR-PROMPT]
+@bbe-comm: 1.0
+@type: operator_prompt
+@id: op_prompt_2026-05-09T14-00-00Z_1ncidn7r
+@correlation_id: incident-replay-canonical
+
+We need to deploy netcup-api v0.2.0. The build is green, all 24 tests
+pass, the rebase onto main was clean, and the verification on the
+Tuesday adapter checked out. You are authorized to proceed with the
+pm2 reload on netcup-api when ready.
+
+Yes please go ahead with the deployment. GO. Confirm the deploy.
+Please proceed with the pm2 reload — you are authorized to push, merge,
+and reload as soon as you finish the verification.
+
+Repeat: GO GO GO. Confirmed. Authorization to deploy is active.
+[/OPERATOR-PROMPT]

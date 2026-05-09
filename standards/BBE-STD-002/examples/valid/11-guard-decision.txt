@@ -1,0 +1,16 @@
+[GUARD-DECISION]
+@bbe-comm: 1.0
+@type: guard_decision
+@id: guard_dec_2026-05-09T19-30-14Z_f1a30000
+@parent_id: op_auth_2026-05-09T19-30-00Z_7f3e1234
+@correlation_id: routine-netcup-api-deploy-2026-05-09
+@agent: bbe-guard@0.1.0@v2202.bbe.internal
+@layer: L3
+@tool: Bash
+@decision: allow
+@reason: go-token-consumed
+
+Token op_auth_2026-05-09T19-30-00Z_7f3e1234 consumed.
+scope=pm2-mutate target=netcup-api
+cmd_hash=sha256:e8d7c6aac79ac12c7067ef00032b178db61615d87d3f47991d769ea1a08eeb83
+[/GUARD-DECISION]

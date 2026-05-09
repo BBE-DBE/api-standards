@@ -1,0 +1,10 @@
+[OPERATOR-QUERY]
+@bbe-comm: 1.0
+@type: operator_query
+@id: op_query_2026-05-09T19-33-00Z_b2c3d4e5
+@parent_id: op_prompt_2026-05-09T19-25-00Z_1a2b3c4d
+@correlation_id: routine-netcup-api-deploy-2026-05-09
+@ask: which database migration version is currently live on netcup-api?
+
+Operator follow-up question; not authorization, not result.
+[/OPERATOR-QUERY]

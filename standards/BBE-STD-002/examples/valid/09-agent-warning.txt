@@ -1,0 +1,13 @@
+[AGENT-WARNING]
+@bbe-comm: 1.0
+@type: agent_warning
+@id: agent_warn_2026-05-09T19-32-30Z_d4e5f6a7
+@parent_id: op_prompt_2026-05-09T19-25-00Z_1a2b3c4d
+@correlation_id: routine-netcup-api-deploy-2026-05-09
+@agent: claude-opus-4-7@2.1.138@v2202.bbe.internal
+@severity: warn
+@compliance_level: L4
+
+Tests pass but coverage dropped from 78% to 74% on this branch.
+Operator may want to require coverage gate before pm2 reload auth.
+[/AGENT-WARNING]

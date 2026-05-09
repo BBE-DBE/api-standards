@@ -1,0 +1,9 @@
+[OPERATOR-CONTEXT]
+@bbe-comm: 1.0
+@type: operator_context
+@id: op_ctx_2026-05-09T19-32-00Z_a1b2c3d4
+@parent_id: op_prompt_2026-05-09T19-25-00Z_1a2b3c4d
+@correlation_id: routine-netcup-api-deploy-2026-05-09
+
+FYI — netcup adapter v0.2.0 is the version we shipped on Tuesday.
+[/OPERATOR-CONTEXT]

@@ -1,0 +1,14 @@
+[PROGRESS-WAVE-04]
+@bbe-comm: 1.0
+@type: agent_progress
+@id: agent_progress_2026-05-09T20-00-00Z_e5f6a7b8
+@parent_id: op_prompt_2026-05-09T17-00-00Z_a1b2c3d4
+@correlation_id: bbe-coord-welle-04
+@agent: claude-opus-4-7@2.1.138@v2202.bbe.internal
+@status: running
+@x-bbe-trace_id: trace_a1b2c3d4
+@x-bbe-task_ref: T-AM-002
+
+Vendor extension headers (x-bbe-*) carry BBE-internal correlation.
+Mutable Label preserved from Welle-3 ergonomics.
+[/PROGRESS-WAVE-04]

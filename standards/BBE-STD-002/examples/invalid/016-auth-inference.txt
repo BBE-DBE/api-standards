@@ -1,0 +1,9 @@
+[RES]
+@bbe-comm: 1.0
+@type: agent_result
+@id: agent_result_2026-05-09T12-00-00Z_a1b2c3d4
+@parent_id: op_prompt_2026-05-09T11-00-00Z_b2c3d4e5
+@agent: claude-opus-4-7@2.1.138@v2202.bbe.internal
+@status: complete
+@authorize: deploy_prod
+[/RES]

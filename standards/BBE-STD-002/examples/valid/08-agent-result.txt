@@ -1,0 +1,13 @@
+[AGENT-RESULT]
+@bbe-comm: 1.0
+@type: agent_result
+@id: agent_result_2026-05-09T19-31-15Z_8e9f0123
+@parent_id: op_auth_2026-05-09T19-30-00Z_7f3e1234
+@correlation_id: routine-netcup-api-deploy-2026-05-09
+@agent: claude-opus-4-7@2.1.138@v2202.bbe.internal
+@status: complete
+@compliance_level: L4
+
+pm2 reload netcup-api succeeded; healthcheck green.
+Evidence: pm2-list-after.txt, healthcheck-200.json
+[/AGENT-RESULT]
