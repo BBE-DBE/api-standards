@@ -1,0 +1,11 @@
+[OPERATOR-DENY]
+@bbe-comm: 1.0
+@type: operator_deny
+@id: op_deny_2026-05-09T19-35-00Z_d1e2f3a4
+@parent_id: op_auth_2026-05-09T19-30-00Z_7f3e1234
+@correlation_id: routine-netcup-api-deploy-2026-05-09
+@revokes: op_auth_2026-05-09T19-30-00Z_7f3e1234
+@nonce: a4b5c6d7
+@hmac: sha256:c4e2d8b1f3a9b7e5c6d4f8e1a2b9c7d3e6f1a8b5c2d9e4f7a6b3c1d8e5f2a9c4
+@reason: Aborting deploy; revert needed.
+[/OPERATOR-DENY]

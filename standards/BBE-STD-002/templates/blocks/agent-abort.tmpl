@@ -1,0 +1,13 @@
+[AGENT-ABORT]
+@bbe-comm: 1.0
+@type: agent_abort
+@id: agent_abort_<YYYY-MM-DDTHH-MM-SSZ>_<hex8>
+@parent_id: <upstream block id that triggered the halt>
+@correlation_id: <session/mandate/Welle id>
+@agent: <type>@<version>@<host>
+@reason: <short kebab-case reason: repo-pivot-detected | scope-out-of-vocabulary | hmac-mismatch | …>
+@compliance_level: L4
+
+<body — explain why the agent halted, what was preserved, what fresh
+authorization is needed to continue (especially under R3 repo-pivot rule)>
+[/AGENT-ABORT]

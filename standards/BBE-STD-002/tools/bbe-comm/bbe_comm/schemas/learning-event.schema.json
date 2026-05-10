@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bbe-dbe:bbe-comm:learning-event:v1.0",
+  "title": "bbe-comm Learning Event",
+  "description": "One entry in the append-only learning-events.jsonl. NEVER contains raw block bodies, raw operator prompts, @hmac values, @nonce values, or any auth-only field value. Content reduced to SHA-256 hashes plus structured metadata. Suggestions synthesized from these events are review-only — never silently applied.",
+  "type": "object",
+  "required": ["schema_version", "event_type", "timestamp"],
+  "properties": {
+    "schema_version": {"type": "string", "pattern": "^\\d+\\.\\d+$"},
+    "bbe_comm_version": {"type": "string"},
+    "timestamp": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "event_type": {
+      "enum": [
+        "lint_error",
+        "repair_suggestion",
+        "repeated_invalid_pattern",
+        "authorization_inference_attempt",
+        "missing_lineage",
+        "invalid_parent_id",
+        "legacy_tag_detected",
+        "guard_denial",
+        "operator_override",
+        "successful_repair",
+        "failed_repair",
+        "schema_gap_detected",
+        "test_gap_detected"
+      ]
+    },
+    "check_id": {
+      "anyOf": [
+        {"type": "null"},
+        {"type": "string", "pattern": "^BBE-COMM-\\d{3}$"}
+      ]
+    },
+    "block_label_shape": {
+      "type": ["string", "null"],
+      "description": "Length-bucketed label shape, NOT the label itself. e.g. 'short|D' = ≤16 chars, contains dash."
+    },
+    "block_type": {"type": ["string", "null"]},
+    "correlation_hash": {
+      "type": ["string", "null"],
+      "description": "SHA-256[:12] of @correlation_id, prefixed with 'corr#'. NEVER the raw correlation_id."
+    },
+    "file_hash": {
+      "type": ["string", "null"],
+      "description": "SHA-256[:12] of file path. NEVER the raw path."
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 240,
+      "description": "Short, redacted human description. NEVER contains block bodies."
+    },
+    "severity": {"anyOf": [{"type": "null"}, {"enum": ["error", "warning", "info"]}]},
+    "extra": {
+      "type": "object",
+      "description": "Structured metadata. Forbidden field names (hmac, nonce, scope, target, issued_by, not_after, revokes, x-bbe-sig, x-bbe-ledger, x-bbe-attest) are scrubbed to '<REDACTED>' on write."
+    }
+  },
+  "additionalProperties": false
+}

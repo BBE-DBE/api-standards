@@ -1,0 +1,6 @@
+[GRANT]
+@bbe-comm: 1.0
+@type: operator_auth
+@id: op_auth_2026-05-09T12-00-00Z_a1b2c3d4
+@correlation_id: routine-deploy
+[/GRANT]

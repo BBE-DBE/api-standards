@@ -1,0 +1,5 @@
+[REQ]
+@bbe-comm: 1.0
+@type: operator_prompt
+@id: NotValid
+[/REQ]

@@ -1,0 +1,15 @@
+[OPERATOR-AUTH]
+@bbe-comm: 1.0
+@type: operator_auth
+@id: op_auth_2026-05-09T19-30-00Z_7f3e1234
+@parent_id: agent_query_2026-05-09T19-29-45Z_5e6f7890
+@correlation_id: routine-netcup-api-deploy-2026-05-09
+@scope: ["pm2-mutate"]
+@target: netcup-api
+@ttl: 5m
+@issued_by: BBE-DBE
+@nonce: 9c8f2a1b
+@hmac: sha256:b1d4f7c8e2a9b34571f6e8d9c2a8b1f4e7d5c6a3b9f8e1d2c5a4b7e8f3d6c9a2
+
+Authorize PM2 reload after netcup adapter v0.2.0 verification.
+[/OPERATOR-AUTH]

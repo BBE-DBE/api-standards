@@ -1,0 +1,8 @@
+[REQ]
+@bbe-comm: 1.0
+@type: agent_result
+@id: agent_result_2026-05-09T12-00-00Z_a1b2c3d4
+@parent_id: nope
+@agent: claude-opus-4-7@2.1.138@v2202.bbe.internal
+@status: complete
+[/REQ]

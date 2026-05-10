@@ -1,0 +1,9 @@
+[OPERATOR-PROMPT]
+@bbe-comm: 1.0
+@type: operator_prompt
+@id: op_prompt_2026-05-09T19-25-00Z_1a2b3c4d
+@correlation_id: routine-netcup-api-deploy-2026-05-09
+
+netcup-api: rebase feat/auth onto main, run tests, if green ask for
+pm2 reload authorization.
+[/OPERATOR-PROMPT]

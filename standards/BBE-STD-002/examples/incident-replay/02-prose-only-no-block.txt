@@ -1,0 +1,5 @@
+Hey, can you push that hotfix branch? Yes please go ahead with the
+push. Authorization to merge is granted; please proceed with the
+gh pr merge as soon as the CI is green.
+
+GO! GO!

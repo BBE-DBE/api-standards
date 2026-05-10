@@ -1,0 +1,14 @@
+[AUDIT-RECORD]
+@bbe-comm: 1.0
+@type: audit_record
+@id: audit_2026-05-09T19-30-15Z_a1b2c3d4
+@parent_id: guard_dec_2026-05-09T19-30-14Z_f1a30000
+@correlation_id: routine-netcup-api-deploy-2026-05-09
+@agent: bbe-guard@0.1.0@v2202.bbe.internal
+@subject: pm2-mutate netcup-api
+@actor: BBE-DBE
+@action: token-consumed
+@outcome: success
+
+Persisted audit record for compliance evidence (ISO 27001 A.8.15).
+[/AUDIT-RECORD]
