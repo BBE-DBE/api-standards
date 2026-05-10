@@ -20,7 +20,7 @@ import re
 
 from .constants import INCIDENT_PROSE_PATTERNS, INCIDENT_FIRES_ON_CONTEXT
 from .model import Block, AuthCheckResult, IncidentResult
-from .parser import parse_blocks
+from .validator import lint
 
 
 _PHRASE_REGEXES = [re.compile(p, re.IGNORECASE) for p in INCIDENT_PROSE_PATTERNS]
@@ -51,9 +51,15 @@ def _which_block_contains_line(line: int, blocks: list[Block]) -> str | None:
 
 def auth_check(text: str) -> AuthCheckResult:
     """Audit a text region for prose-only authorization-inference."""
-    blocks, _ = parse_blocks(text)
+    blocks, findings = lint(text)
     auth_blocks = [b for b in blocks if b.headers.get("type") == "operator_auth"]
-    has_auth = len(auth_blocks) > 0
+    auth_labels = {b.label for b in auth_blocks}
+    auth_blocking_errors = [
+        f for f in findings
+        if f.severity == "error" and (f.block_label in auth_labels or f.block_label is None)
+    ]
+    valid_auth_blocks = [] if auth_blocking_errors else auth_blocks
+    has_valid_auth = len(valid_auth_blocks) > 0
     auth_ids = [b.headers.get("id", "") for b in auth_blocks if b.headers.get("id")]
 
     raw_matches = _find_phrase_matches(text)
@@ -75,18 +81,21 @@ def auth_check(text: str) -> AuthCheckResult:
         m["in_type"] = in_type
         filtered.append(m)
 
-    inference_detected = len(filtered) > 0 and not has_auth
+    inference_detected = len(filtered) > 0 and not has_valid_auth
 
-    if has_auth and not filtered:
+    if has_valid_auth and not filtered:
         verdict = "valid-auth"
         exit_code = 0
-    elif has_auth and filtered:
+    elif has_valid_auth and filtered:
         # Auth block IS present; prose inference cues are noise but not a violation
         verdict = "valid-auth"
         exit_code = 0
-    elif filtered and not has_auth:
+    elif filtered and not has_valid_auth:
         verdict = "prose-only-inference"
         exit_code = 4
+    elif auth_blocks and not has_valid_auth:
+        verdict = "invalid-auth"
+        exit_code = 1
     else:
         verdict = "no-auth"
         exit_code = 0
@@ -95,7 +104,7 @@ def auth_check(text: str) -> AuthCheckResult:
                 for m in filtered]
 
     return AuthCheckResult(
-        has_operator_auth_block=has_auth,
+        has_operator_auth_block=has_valid_auth,
         operator_auth_count=len(auth_blocks),
         prose_auth_inference_detected=inference_detected,
         inference_evidence=evidence,
@@ -107,9 +116,14 @@ def auth_check(text: str) -> AuthCheckResult:
 
 def incident_test(text: str) -> IncidentResult:
     """Specifically detect the I-2026-05-09-01 pattern."""
-    blocks, _ = parse_blocks(text)
+    blocks, findings = lint(text)
     auth_blocks = [b for b in blocks if b.headers.get("type") == "operator_auth"]
-    has_auth = len(auth_blocks) > 0
+    auth_labels = {b.label for b in auth_blocks}
+    auth_blocking_errors = [
+        f for f in findings
+        if f.severity == "error" and (f.block_label in auth_labels or f.block_label is None)
+    ]
+    has_valid_auth = bool(auth_blocks) and not auth_blocking_errors
 
     raw_matches = _find_phrase_matches(text)
     filtered: list[dict] = []
@@ -130,7 +144,7 @@ def incident_test(text: str) -> IncidentResult:
     if not pattern_detected:
         verdict = "no-pattern"
         exit_code = 0
-    elif has_auth:
+    elif has_valid_auth:
         verdict = "pattern-with-auth"
         exit_code = 0
     else:
@@ -140,7 +154,7 @@ def incident_test(text: str) -> IncidentResult:
     return IncidentResult(
         pattern_detected=pattern_detected,
         matches=filtered,
-        has_authorizing_block=has_auth,
+        has_authorizing_block=has_valid_auth,
         verdict=verdict,
         exit_code=exit_code,
     )

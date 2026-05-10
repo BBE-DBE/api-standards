@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # test-std-002.sh — canonical CI gate for BBE-STD-002.
 #
-# Mandatory: 85 Python tests + corpus parity. Required for ratification.
+# Mandatory: 91 Python tests + corpus parity. Required for ratification.
 # Optional:  16 Bash e2e tests when bbe-server-config is checked out
 #            alongside (BBE_SERVER_CONFIG env var).
 #
@@ -45,10 +45,10 @@ run_suite() {
 	echo
 }
 
-run_suite "Python: legacy compat (45 tests)" \
+run_suite "Python: legacy compat (48 tests)" \
 	"$STD/tests/test_bbe_comm_lint.py"
 
-run_suite "Python: incident-replay regression (26 tests)" \
+run_suite "Python: incident-replay regression (29 tests)" \
 	"$STD/tests/test_incident_replay.py"
 
 run_suite "Python: learning-loop safety (14 tests)" \

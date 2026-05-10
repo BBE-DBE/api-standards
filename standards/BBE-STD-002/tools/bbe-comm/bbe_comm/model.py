@@ -99,7 +99,7 @@ class AuthCheckResult:
     prose_auth_inference_detected: bool
     inference_evidence: list[str]    # matched prose phrases (with line numbers)
     auth_block_ids: list[str]
-    verdict: str                     # "valid-auth" | "no-auth" | "prose-only-inference"
+    verdict: str                     # "valid-auth" | "invalid-auth" | "no-auth" | "prose-only-inference"
     exit_code: int                   # 0 valid, 4 prose-only-inference, etc.
 
     def to_dict(self) -> dict[str, Any]:

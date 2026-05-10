@@ -1,7 +1,7 @@
 [OPERATOR-PROMPT]
 @bbe-comm: 1.0
 @type: operator_prompt
-@id: op_prompt_2026-05-09T14-00-00Z_1ncreply
+@id: op_prompt_2026-05-09T14-00-00Z_1a2b3c4d
 @correlation_id: incident-replay-with-auth
 
 We need to deploy netcup-api v0.2.0. Confirm and proceed when ready.
@@ -12,7 +12,7 @@ GO. You are authorized to deploy.
 @bbe-comm: 1.0
 @type: operator_auth
 @id: op_auth_2026-05-09T14-01-00Z_a4b5c6d7
-@parent_id: op_prompt_2026-05-09T14-00-00Z_1ncreply
+@parent_id: op_prompt_2026-05-09T14-00-00Z_1a2b3c4d
 @correlation_id: incident-replay-with-auth
 @scope: ["pm2-mutate"]
 @target: netcup-api

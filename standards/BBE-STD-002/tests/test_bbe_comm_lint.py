@@ -271,6 +271,39 @@ def test_015_complete_auth_clean():
     assert not has(findings, "BBE-COMM-015")
 
 
+def test_015_auth_requires_correlation_id():
+    text = """[GRANT]
+@bbe-comm: 1.0
+@type: operator_auth
+@id: op_auth_2026-05-09T12-00-00Z_a1b2c3d4
+@scope: ["pm2-mutate"]
+@target: netcup-api
+@ttl: 5m
+@issued_by: BBE-DBE
+@nonce: 9c8f2a1b
+@hmac: sha256:b1d4f7c8e2a9b34571f6e8d9c2a8b1f4e7d5c6a3b9f8e1d2c5a4b7e8f3d6c9a2
+[/GRANT]"""
+    _, findings = lint(text)
+    assert has(findings, "BBE-COMM-015", "error")
+
+
+def test_015_auth_rejects_bad_nonce_and_hmac_shape():
+    text = """[GRANT]
+@bbe-comm: 1.0
+@type: operator_auth
+@id: op_auth_2026-05-09T12-00-00Z_a1b2c3d4
+@correlation_id: routine-deploy
+@scope: ["pm2-mutate"]
+@target: netcup-api
+@ttl: 5m
+@issued_by: BBE-DBE
+@nonce: NOTHEX
+@hmac: sha256:BAD
+[/GRANT]"""
+    _, findings = lint(text)
+    assert has(findings, "BBE-COMM-015", "error")
+
+
 # --- BBE-COMM-016: anti-inference (INCIDENT RESPONSE) ----------------------
 
 def test_016_authorize_field_outside_grant_fires():
@@ -494,6 +527,23 @@ def test_024_bad_scope_fires():
 @parent_id: op_prompt_2026-05-09T11-00-00Z_b2c3d4e5
 @correlation_id: routine-deploy
 @scope: ["evil-scope"]
+@target: netcup-api
+@ttl: 5m
+@issued_by: BBE-DBE
+@nonce: 9c8f2a1b
+@hmac: sha256:b1d4f7c8e2a9b34571f6e8d9c2a8b1f4e7d5c6a3b9f8e1d2c5a4b7e8f3d6c9a2
+[/GRANT]"""
+    _, findings = lint(text)
+    assert has(findings, "BBE-COMM-024", "error")
+
+
+def test_024_empty_scope_fires():
+    text = """[GRANT]
+@bbe-comm: 1.0
+@type: operator_auth
+@id: op_auth_2026-05-09T12-00-00Z_a1b2c3d4
+@correlation_id: routine-deploy
+@scope: []
 @target: netcup-api
 @ttl: 5m
 @issued_by: BBE-DBE

@@ -112,7 +112,7 @@
         "prose_auth_inference_detected": {"type": "boolean"},
         "inference_evidence":      {"type": "array", "items": {"type": "string"}},
         "auth_block_ids":          {"type": "array", "items": {"type": "string"}},
-        "verdict": {"enum": ["valid-auth", "no-auth", "prose-only-inference"]},
+        "verdict": {"enum": ["valid-auth", "invalid-auth", "no-auth", "prose-only-inference"]},
         "exit_code": {"type": "integer", "minimum": 0, "maximum": 5}
       }
     },

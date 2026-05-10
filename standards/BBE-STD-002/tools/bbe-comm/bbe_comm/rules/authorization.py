@@ -12,12 +12,10 @@ These are the load-bearing checks for the incident-fix:
 from __future__ import annotations
 
 import json
-import re
-
 from ..constants import (
     AUTH_ONLY_FIELDS, FORBIDDEN_AUTH_INFERENCE_FIELDS,
     CANONICAL_SCOPES, SCOPE_MODE_VALUES,
-    TTL_RE, TTL_MAX_SECONDS,
+    TTL_RE, TTL_MAX_SECONDS, HMAC_RE, NONCE_RE,
 )
 from ..model import Block, Finding
 
@@ -26,13 +24,40 @@ def check_015_operator_auth_required_fields(b: Block) -> list[Finding]:
     if b.headers.get("type") != "operator_auth":
         return []
     missing = []
-    for f in ("scope", "target", "ttl", "nonce", "hmac", "issued_by", "id"):
-        if f not in b.headers:
+    for f in ("scope", "target", "ttl", "nonce", "hmac", "issued_by", "id", "correlation_id"):
+        if f not in b.headers or not b.headers[f].strip():
             missing.append(f"@{f}")
     if missing:
         return [Finding("BBE-COMM-015", "error", "§7.2",
                         f"operator_auth missing required field(s): {missing}",
                         b.open_line, b.label)]
+    findings: list[Finding] = []
+    if not NONCE_RE.match(b.headers["nonce"]):
+        findings.append(Finding(
+            "BBE-COMM-015", "error", "§7.2",
+            f"operator_auth @nonce '{b.headers['nonce']}' must match 4-16 lowercase hex chars",
+            b.header_lines.get("nonce", b.open_line), b.label,
+        ))
+    if not HMAC_RE.match(b.headers["hmac"]):
+        findings.append(Finding(
+            "BBE-COMM-015", "error", "§7.2",
+            "operator_auth @hmac must match sha256:<64 lowercase hex chars>",
+            b.header_lines.get("hmac", b.open_line), b.label,
+        ))
+    if not b.headers["target"].strip():
+        findings.append(Finding(
+            "BBE-COMM-015", "error", "§7.2",
+            "operator_auth @target must be non-empty",
+            b.header_lines.get("target", b.open_line), b.label,
+        ))
+    if not b.headers["issued_by"].strip():
+        findings.append(Finding(
+            "BBE-COMM-015", "error", "§7.2",
+            "operator_auth @issued_by must be non-empty",
+            b.header_lines.get("issued_by", b.open_line), b.label,
+        ))
+    if findings:
+        return findings
     return []
 
 
@@ -94,6 +119,10 @@ def check_024_scope_vocabulary(b: Block) -> list[Finding]:
         return [Finding("BBE-COMM-024", "error", "§7.3",
                         f"@scope value '{raw}' is not parseable as JSON array or "
                         f"single-token shorthand",
+                        b.header_lines.get("scope", b.open_line), b.label)]
+    if not tokens:
+        return [Finding("BBE-COMM-024", "error", "§7.3",
+                        "@scope must contain at least one canonical scope token",
                         b.header_lines.get("scope", b.open_line), b.label)]
     bad = [t for t in tokens if t not in CANONICAL_SCOPES]
     if bad:
