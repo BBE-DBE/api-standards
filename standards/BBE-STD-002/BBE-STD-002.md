@@ -4,9 +4,9 @@
 |---|---|
 | Standard ID | BBE-STD-002 |
 | Title | Agent Communication Protocol |
-| Version | **1.0-RC2** |
-| Status | RELEASE-CANDIDATE-2 (8 RC1-open-issues resolved per operator mandate 2026-05-09; pending final ratification per OPEN_ISSUES-RC2.md) |
-| Effective | upon Phase B acceptance per §13 |
+| Version | **1.0.0** |
+| Status | RATIFIED |
+| Effective | 2026-05-13 |
 | Owner | `api-standards/standards/` (canonical home, post-rename); `bbe-server-config/` is runtime integration home; `/home/dev/bbe-std-002-rc1/` is staging (non-canonical) |
 | Author | claude_integrator_21 (RC2 hardening under OPERATOR · BBE-STD-002 · AUTONOMOUS-TOOLING-SELF-OPTIMIZATION; consolidates Welt-A + Welt-B and applies 8 operator decisions) |
 | Supersedes | BBE-STD-002 v1.0-RC1 (this repo, 2026-05-09) and its predecessors (Welt A `RATIFIED-CANDIDATE`; Welt B v0.1.0-draft) |

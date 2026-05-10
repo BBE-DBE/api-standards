@@ -16,7 +16,7 @@ specific deviations live in each service's own `STANDARDS.md`.
 
 | Standard ID  | Title                            | Version    | Status                          | Location                                                                  |
 |--------------|----------------------------------|------------|---------------------------------|---------------------------------------------------------------------------|
-| BBE-STD-002  | Agent Communication Protocol     | v1.0-RC2   | RELEASE-CANDIDATE-2 (pending ratification — see `OPEN_ISSUES-RC2.md`) | [`standards/BBE-STD-002/`](standards/BBE-STD-002/) |
+| BBE-STD-002  | Agent Communication Protocol     | v1.0.0     | RATIFIED                                                              | [`standards/BBE-STD-002/`](standards/BBE-STD-002/) |
 
 **BBE-STD-002 notes:**
 - Runtime-agnostic per [ADR-0003](standards/BBE-STD-002/docs/adr/0003-runtime-agnostic-posture.md). The BBE deployment runtime binding lives in `bbe-server-config/configs/bbe-guard/`.

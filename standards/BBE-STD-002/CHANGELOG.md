@@ -1,5 +1,40 @@
 # Changelog — BBE-STD-002
 
+## v1.0.0 — 2026-05-13 (RATIFIED)
+
+Ratification of BBE-STD-002 v1.0-RC2 as v1.0.0 under operator mandate
+`[OPERATOR · BBE-STD-002 · GO-A4-RATIFICATION-EXECUTE]` 2026-05-10.
+No technical changes vs. RC2; this release flips frontmatter Version +
+Status + Effective per the A4 commit plan. The standard is
+runtime-agnostic; the BBE-deployment runtime binding lands separately
+in `bbe-server-config/`.
+
+### Ratified
+
+- Status flipped: RELEASE-CANDIDATE-2 → RATIFIED.
+- Version flipped: v1.0-RC2 → v1.0.0.
+- Effective date set: 2026-05-13 (Phase D 14-day warning window starts).
+- All 5 residuals (R1–R5) confirmed per `RATIFICATION-NOTE-R1-R5.md`.
+- 91/91 mandatory tests pass via `scripts/test-std-002.sh`.
+- Codex final-gate review: PASS_WITH_WARNINGS, no blocking issues.
+
+### Carried unchanged from v1.0-RC2
+
+- Spec text, schema, examples, templates, ADRs, tooling — identical.
+- The PR (#2) review-surface artefacts (`RATIFICATION-NOTE-R1-R5.md`,
+  `docs/PR-DRAFT-BBE-STD-002-v1.0.0.md`) remain in place as historical
+  record.
+
+### Phase D rollout
+
+- 2026-05-13 → 2026-05-27: 14-day warning window. Linter findings emit;
+  AGUARD reference binding (after `bbe-server-config` runtime PR lands)
+  emits warning audits. No hard blocks.
+- From 2026-05-28: hard floors take effect — L2 required for formal
+  reports (`@type ∈ {agent_result, audit_record}` with
+  `@status: complete`); L4 required for privileged workflows (any tool
+  action under §7.3 scope vocabulary).
+
 ## v1.0-RC2 — 2026-05-09 (later same day)
 
 Hardening pass under operator mandate `[OPERATOR · BBE-STD-002 · AUTONOMOUS-TOOLING-SELF-OPTIMIZATION]`. Applies 8 explicit operator decisions plus a major tooling refactor and a self-optimization learning loop.
