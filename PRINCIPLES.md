@@ -24,14 +24,15 @@ listed in
    SHA-256 drift detection; structured pino logging; UUIDv7 externally,
    BIGSERIAL internally; Prometheus metrics; graceful shutdown.
 8. **Reuse-First / Lookup-before-Build.** Before any new capability is
-   implemented, two files MUST be consulted, in this order:
-   [`registry/REGISTRY.yaml`](registry/REGISTRY.yaml) — every repo in the
-   estate, scored and grouped by `domain:` and `cluster:` — and then the
-   service catalog at [`SERVICES.yaml`](SERVICES.yaml) for the running
-   services. The register answers "does something like this already
-   exist anywhere?"; the catalog answers "how do I call it?". A new repo
-   MUST NOT be created for a capability that an existing `cluster:`
-   already covers — extend the cluster's `canonical` repo instead.
+   implemented, the estate MUST be asked whether it already exists, in this
+   order: the Haus-Auskunft (`GET /v1/haben-wir?q=`, `POST /v1/pruefe-vorhaben`
+   — see each service's `AGENTS.md`), then the register it is fed from
+   (`BBE-DBE/oktogen-os` → `estate/ESTATE.yaml`: every repo the house owns,
+   grouped by `bereich` and `cluster`), then the running-service catalog at
+   [`SERVICES.yaml`](SERVICES.yaml). The first two answer *"does this exist
+   anywhere?"*; this catalog answers *"how do I call it?"*. A new repo MUST NOT
+   be created for a capability an existing `cluster` already covers — extend
+   that cluster's `kanon` repo instead.
    If an existing service already exposes the capability
    (matching `services[*].capabilities`), the new code MUST consume it
    over HTTP — never copy logic, never re-implement. Cross-cutting
