@@ -1,0 +1,400 @@
+<title>BBE Estate Register</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+  :root{
+    --paper:#F6F5F1; --surface:#FFFFFF; --surface-2:#FBFAF7; --surface-3:#F1EFE9;
+    --ink:#14181F; --ink-2:#3D434D; --muted:#6E7178;
+    --rule:#DCD8CF; --rule-2:#EAE7E0;
+    --accent:#2F4858; --accent-soft:#E3EAED;
+    --t-core:#1F4E5F; --t-active:#3C7A3A; --t-asset:#9C711A; --t-seed:#767A82; --t-dump:#8C3A36;
+    --shadow:0 1px 2px rgba(20,24,31,.06),0 4px 14px rgba(20,24,31,.05);
+    --serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+    --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#15171B; --surface:#1D2026; --surface-2:#22252B; --surface-3:#2A2E35;
+      --ink:#E9E7E2; --ink-2:#B6B9BF; --muted:#8B8F97;
+      --rule:#333840; --rule-2:#2A2E35;
+      --accent:#8FB6C4; --accent-soft:#243038;
+      --t-core:#67A8BC; --t-active:#79B872; --t-asset:#D3A63F; --t-seed:#9297A0; --t-dump:#D07A74;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.28);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#15171B; --surface:#1D2026; --surface-2:#22252B; --surface-3:#2A2E35;
+    --ink:#E9E7E2; --ink-2:#B6B9BF; --muted:#8B8F97;
+    --rule:#333840; --rule-2:#2A2E35;
+    --accent:#8FB6C4; --accent-soft:#243038;
+    --t-core:#67A8BC; --t-active:#79B872; --t-asset:#D3A63F; --t-seed:#9297A0; --t-dump:#D07A74;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.28);
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);
+       font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1280px;margin:0 auto;padding-inline:20px;padding-block:28px 64px}
+  a{color:var(--accent)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* ── masthead ─────────────────────────────────────────────── */
+  .mast{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;
+        gap:16px;padding-bottom:16px;border-bottom:2px solid var(--ink)}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(26px,4vw,38px);
+     line-height:1.05;margin:0;letter-spacing:-.015em;text-wrap:balance}
+  .sub{color:var(--muted);font-size:13px;margin-top:6px}
+  .sub b{color:var(--ink-2);font-weight:500}
+  .meta{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:right;
+        line-height:1.7;letter-spacing:.01em}
+  .meta .big{font-size:30px;color:var(--ink);font-weight:500;
+             font-variant-numeric:tabular-nums;display:block;line-height:1}
+
+  /* ── proportional tier bar ────────────────────────────────── */
+  .tierbar{display:flex;height:34px;margin-top:22px;border-radius:2px;overflow:hidden;
+           border:1px solid var(--rule)}
+  .tierbar button{border:0;padding:0;cursor:pointer;position:relative;
+                  font-family:var(--mono);font-size:11px;font-weight:600;color:var(--paper);
+                  display:flex;align-items:center;justify-content:center;
+                  transition:filter .15s;min-width:0}
+  .tierbar button:hover{filter:brightness(1.12)}
+  .tierbar button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ink)}
+  .tierkey{display:flex;flex-wrap:wrap;gap:4px 20px;margin-top:10px;
+           font-size:12px;color:var(--muted)}
+  .tierkey span{display:flex;align-items:center;gap:7px}
+  .tierkey i{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+  /* ── flag tiles ───────────────────────────────────────────── */
+  .flags{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+         gap:12px;margin-top:24px}
+  .flag{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);
+        padding:13px 15px;text-align:left;cursor:pointer;font:inherit;color:inherit;
+        display:flex;flex-direction:column;gap:3px;transition:border-color .15s,background .15s}
+  .flag:hover{background:var(--surface-2);border-left-color:var(--ink)}
+  .flag[aria-pressed="true"]{background:var(--accent-soft);border-left-color:var(--accent)}
+  .flag .n{font-family:var(--mono);font-size:23px;font-weight:600;
+           font-variant-numeric:tabular-nums;line-height:1.1}
+  .flag .t{font-weight:600;font-size:13px}
+  .flag .d{color:var(--muted);font-size:12px;line-height:1.4}
+
+  /* ── two-column body ──────────────────────────────────────── */
+  .cols{display:grid;grid-template-columns:230px 1fr;gap:28px;margin-top:34px;align-items:start}
+  @media (max-width:860px){.cols{grid-template-columns:1fr;gap:22px}}
+
+  .railhead,.secthead{font-family:var(--mono);font-size:11px;font-weight:600;
+        letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+        padding-bottom:7px;border-bottom:1px solid var(--rule);margin-bottom:4px}
+  .rail{display:flex;flex-direction:column}
+  .dom{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;
+       padding:7px 8px;border:0;background:none;font:inherit;color:inherit;
+       cursor:pointer;text-align:left;border-radius:3px;transition:background .12s}
+  .dom:hover{background:var(--surface-3)}
+  .dom[aria-pressed="true"]{background:var(--accent-soft)}
+  .dom .lbl{font-family:var(--mono);font-size:12px}
+  .dom .ct{font-family:var(--mono);font-size:12px;color:var(--muted);
+           font-variant-numeric:tabular-nums}
+  .dom .track{grid-column:1/-1;height:3px;background:var(--rule-2);border-radius:2px;overflow:hidden}
+  .dom .track i{display:block;height:100%;background:var(--accent)}
+
+  /* ── controls ─────────────────────────────────────────────── */
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+  .search{flex:1 1 240px;min-width:0;font:inherit;font-family:var(--mono);font-size:13px;
+          padding:9px 12px;background:var(--surface);color:var(--ink);
+          border:1px solid var(--rule);border-radius:3px}
+  .search::placeholder{color:var(--muted)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-family:var(--mono);font-size:11.5px;font-weight:500;padding:6px 10px;
+        border:1px solid var(--rule);background:var(--surface);color:var(--ink-2);
+        border-radius:2px;cursor:pointer;transition:all .12s}
+  .chip:hover{border-color:var(--ink-2)}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .reset{font-family:var(--mono);font-size:11.5px;color:var(--muted);background:none;
+         border:0;cursor:pointer;text-decoration:underline;padding:6px 2px}
+  .count{font-family:var(--mono);font-size:12px;color:var(--muted);
+         font-variant-numeric:tabular-nums;margin-left:auto}
+
+  /* ── table ────────────────────────────────────────────────── */
+  .tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);
+             box-shadow:var(--shadow)}
+  table{border-collapse:collapse;width:100%;min-width:800px}
+  thead th{position:sticky;top:0;z-index:2;background:var(--surface-3);
+           font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.07em;
+           text-transform:uppercase;color:var(--muted);text-align:left;
+           padding:9px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+  thead th.s{cursor:pointer;user-select:none}
+  thead th.s:hover{color:var(--ink)}
+  thead th .ar{opacity:.35;font-size:9px}
+  thead th[aria-sort] .ar{opacity:1}
+  td{padding:8px 10px;border-bottom:1px solid var(--rule-2);vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover td{background:var(--surface-2)}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;
+       white-space:nowrap;font-size:12.5px}
+  td.stripe{padding:0;width:3px;border-bottom:1px solid var(--rule-2)}
+  .repo{font-family:var(--mono);font-size:13px;font-weight:500;display:flex;
+        align-items:center;gap:6px;flex-wrap:wrap}
+  .repo a{text-decoration:none;color:inherit;border-bottom:1px solid var(--rule)}
+  .repo a:hover{border-bottom-color:var(--accent);color:var(--accent)}
+  .warn{color:var(--t-dump);font-size:11px;cursor:help}
+  .desc{color:var(--muted);font-size:12px;line-height:1.4;max-width:44ch;
+        font-family:var(--sans);margin-top:2px}
+  .org{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.03em}
+  .scorecell{position:relative;width:64px}
+  .scorecell .bar{position:absolute;left:10px;right:10px;bottom:5px;height:2px;
+                  background:var(--rule-2)}
+  .scorecell .bar i{display:block;height:100%;background:var(--accent)}
+  .pill{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:600;
+        letter-spacing:.05em;padding:3px 7px;border-radius:2px;white-space:nowrap;
+        border:1px solid currentColor}
+  .dom-tag{font-family:var(--mono);font-size:11px;color:var(--ink-2);white-space:nowrap}
+  .empty{padding:44px 20px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:13px}
+
+  /* ── clusters ─────────────────────────────────────────────── */
+  .clusters{margin-top:40px}
+  .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;margin-top:14px}
+  .cl{background:var(--surface);border:1px solid var(--rule);padding:14px 15px}
+  .cl h3{margin:0;font-family:var(--mono);font-size:12px;font-weight:600;
+         letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .cl .can{font-family:var(--mono);font-size:13.5px;font-weight:600;margin-top:7px;
+           display:flex;align-items:center;gap:7px}
+  .cl .can::before{content:"KANON";font-size:9px;letter-spacing:.08em;padding:2px 5px;
+                   background:var(--accent);color:var(--surface);border-radius:2px;font-weight:600}
+  :root[data-theme="dark"] .cl .can::before{color:#15171B}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .cl .can::before{color:#15171B}}
+  .cl ul{list-style:none;margin:9px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:4px}
+  .cl li{font-family:var(--mono);font-size:11.5px;color:var(--muted);
+         background:var(--surface-3);padding:3px 7px;border-radius:2px}
+  .cl .foot{margin-top:10px;font-size:12px;color:var(--muted)}
+
+  footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--rule);
+         color:var(--muted);font-size:12px;display:flex;flex-wrap:wrap;gap:6px 18px}
+  footer code{font-family:var(--mono);font-size:11.5px;background:var(--surface-3);
+              padding:2px 5px;border-radius:2px;color:var(--ink-2)}
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <h1>BBE Estate Register</h1>
+      <div class="sub">Jedes Repo in <b>BBE-DBE</b> und <b>SSR-SFS</b> — bewertet, geclustert,
+        mit genau einer offenen Entscheidung. Generiert aus <b>registry/REGISTRY.yaml</b>.</div>
+    </div>
+    <div class="meta"><span class="big" id="total">—</span>Repos · Stand <span id="gen">—</span></div>
+  </header>
+
+  <div class="tierbar" id="tierbar" role="group" aria-label="Nach Tier filtern"></div>
+  <div class="tierkey" id="tierkey"></div>
+
+  <div class="flags" id="flags"></div>
+
+  <div class="cols">
+    <nav class="rail" aria-label="Nach Domäne filtern">
+      <div class="railhead">Domäne — wo suchen</div>
+      <div id="rail"></div>
+    </nav>
+
+    <main>
+      <div class="controls">
+        <input class="search" id="q" type="search" placeholder="Repo, Beschreibung, Sprache…"
+               aria-label="Suchen" autocomplete="off">
+        <div class="chips" id="actions" role="group" aria-label="Nach Aktion filtern"></div>
+        <button class="reset" id="reset" hidden>Filter zurücksetzen</button>
+        <span class="count" id="count"></span>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th aria-hidden="true"></th>
+              <th class="s" data-k="score">Score <span class="ar">▼</span></th>
+              <th class="s" data-k="name">Repo <span class="ar">▼</span></th>
+              <th class="s" data-k="domain">Domäne <span class="ar">▼</span></th>
+              <th class="s" data-k="language">Sprache <span class="ar">▼</span></th>
+              <th class="s" data-k="lifespan_d">Historie <span class="ar">▼</span></th>
+              <th class="s" data-k="dormant_d">Ruht <span class="ar">▼</span></th>
+              <th class="s" data-k="action">Aktion <span class="ar">▼</span></th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="empty" id="empty" hidden>Kein Repo passt auf diese Filter.</div>
+      </div>
+    </main>
+  </div>
+
+  <section class="clusters">
+    <div class="secthead">Konsolidierung — pro Cluster gewinnt ein Repo</div>
+    <div class="cgrid" id="cgrid"></div>
+  </section>
+
+  <footer>
+    <span>Regenerieren: <code>./scripts/fetch_repos.sh</code> → <code>python3 scripts/build_registry.py</code></span>
+    <span>Score = 35 Iteration + 30 Aktualität + 15 Doku + 10 sauberer Trunk + 10 ratifiziert</span>
+  </footer>
+</div>
+
+<script>
+const DATA = /*__REGISTRY_DATA__*/;
+const REPOS = DATA.repos, CLUSTERS = DATA.clusters;
+const TIERS = [
+  ["CORE",  "--t-core",  "Ratifizierte Foundation"],
+  ["ACTIVE","--t-active","Push in den letzten 45 Tagen"],
+  ["ASSET", "--t-asset", "≥7 Tage Historie, ruhend — ungenutztes Kapital"],
+  ["SEED",  "--t-seed",  "Angefangen, <7 Tage Historie"],
+  ["DUMP",  "--t-dump",  "Ganze Historie <1 Stunde — Backup, kein Projekt"],
+];
+const TCOL = Object.fromEntries(TIERS.map(([t,v]) => [t, `var(${v})`]));
+const ACTIONS = ["KEEP","SHIP","REVIVE","MERGE","ARCHIVE"];
+const ACT_HINT = {KEEP:"Bestand",SHIP:"Trunk offen — nach main mergen",
+  REVIVE:"Substanz, ruhend — entscheiden",MERGE:"In Kanon einfalten",ARCHIVE:"Stilllegen"};
+
+const S = {tiers:new Set(), doms:new Set(), acts:new Set(), flag:null, q:"", sort:"score", dir:-1};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+$("#total").textContent = REPOS.length;
+$("#gen").textContent = DATA.generated_at;
+
+/* ── tier bar ─────────────────────────────────────────────── */
+const counts = t => REPOS.filter(r => r.tier === t).length;
+$("#tierbar").innerHTML = TIERS.map(([t]) => {
+  const n = counts(t);
+  return `<button data-tier="${t}" aria-pressed="false" title="${t}: ${n} Repos"
+    style="flex:${n};background:${TCOL[t]}">${n >= 12 ? t + " " + n : n}</button>`;
+}).join("");
+$("#tierkey").innerHTML = TIERS.map(([t,v,d]) =>
+  `<span><i style="background:var(${v})"></i><b style="color:var(--ink-2);font-family:var(--mono);font-size:11.5px">${t}</b> ${d}</span>`).join("");
+
+/* ── flag tiles ───────────────────────────────────────────── */
+const FLAGS = [
+  {id:"merge",  n:REPOS.filter(r => r.action === "MERGE").length, t:"Merge-Kandidaten",
+   d:"Doppelt belegte Capability — gehört in das kanonische Repo des Clusters.",
+   f:r => r.action === "MERGE"},
+  {id:"trunk",  n:REPOS.filter(r => r.unmerged_trunk).length, t:"Offene Trunks",
+   d:"Default-Branch ist ein Feature-Branch. Jeder Klon landet halbfertig.",
+   f:r => r.unmerged_trunk},
+  {id:"undoc",  n:REPOS.filter(r => r.undocumented).length, t:"Ohne Beschreibung",
+   d:"Für Lookup-before-Build unsichtbar. Billigster Fix im Bestand.",
+   f:r => r.undocumented},
+  {id:"revive", n:REPOS.filter(r => r.action === "REVIVE").length, t:"Wiederbelebbar",
+   d:"Echte Substanz liegt still. Braucht eine bewusste Entscheidung.",
+   f:r => r.action === "REVIVE"},
+];
+$("#flags").innerHTML = FLAGS.map(f =>
+  `<button class="flag" data-flag="${f.id}" aria-pressed="false">
+     <span class="n">${f.n}</span><span class="t">${f.t}</span><span class="d">${f.d}</span></button>`).join("");
+
+/* ── domain rail ──────────────────────────────────────────── */
+const domCounts = {};
+REPOS.forEach(r => domCounts[r.domain] = (domCounts[r.domain] || 0) + 1);
+const domList = Object.entries(domCounts).sort((a,b) => b[1] - a[1]);
+const domMax = domList[0][1];
+$("#rail").innerHTML = domList.map(([d,n]) =>
+  `<button class="dom" data-dom="${d}" aria-pressed="false">
+     <span class="lbl">${d}</span><span class="ct">${n}</span>
+     <span class="track"><i style="width:${(n/domMax*100).toFixed(1)}%"></i></span></button>`).join("");
+
+/* ── action chips ─────────────────────────────────────────── */
+$("#actions").innerHTML = ACTIONS.map(a =>
+  `<button class="chip" data-act="${a}" aria-pressed="false" title="${ACT_HINT[a]}">${a}</button>`).join("");
+
+/* ── clusters ─────────────────────────────────────────────── */
+$("#cgrid").innerHTML = Object.entries(CLUSTERS)
+  .sort((a,b) => b[1].members.length - a[1].members.length).map(([name,c]) => {
+    const fold = c.members.filter(m => m !== c.canonical);
+    return `<article class="cl"><h3>${esc(name)}</h3>
+      <div class="can">${esc(c.canonical.split("/")[1])}</div>
+      <ul>${fold.map(m => `<li>${esc(m.split("/")[1])}</li>`).join("")}</ul>
+      <div class="foot">${fold.length} einfalten → 1</div></article>`;
+  }).join("");
+
+/* ── table ────────────────────────────────────────────────── */
+const maxLife = Math.max(...REPOS.map(r => r.lifespan_d));
+function visible(){
+  return REPOS.filter(r => {
+    if (S.tiers.size && !S.tiers.has(r.tier)) return false;
+    if (S.doms.size  && !S.doms.has(r.domain)) return false;
+    if (S.acts.size  && !S.acts.has(r.action)) return false;
+    if (S.flag && !FLAGS.find(f => f.id === S.flag).f(r)) return false;
+    if (S.q){
+      const hay = (r.name + " " + r.org + " " + (r.description||"") + " " +
+                   (r.language||"") + " " + r.domain + " " + (r.cluster||"")).toLowerCase();
+      if (!hay.includes(S.q)) return false;
+    }
+    return true;
+  }).sort((a,b) => {
+    const k = S.sort, x = a[k], y = b[k];
+    const c = typeof x === "number" ? x - y : String(x ?? "").localeCompare(String(y ?? ""));
+    return c * S.dir || a.name.localeCompare(b.name);
+  });
+}
+function render(){
+  const rows = visible();
+  $("#count").textContent = rows.length === REPOS.length
+    ? `${REPOS.length} Repos` : `${rows.length} von ${REPOS.length}`;
+  $("#empty").hidden = rows.length > 0;
+  $("#reset").hidden = !(S.tiers.size || S.doms.size || S.acts.size || S.flag || S.q);
+  $("#rows").innerHTML = rows.map(r => {
+    const dormTint = r.dormant_d > 120 ? "var(--t-dump)" : r.dormant_d > 45 ? "var(--t-asset)" : "var(--ink-2)";
+    return `<tr>
+      <td class="stripe" style="background:${TCOL[r.tier]}"></td>
+      <td class="num scorecell">${r.score}<span class="bar"><i style="width:${r.score}%"></i></span></td>
+      <td><div class="repo"><a href="https://github.com/${r.full_name}" target="_blank"
+            rel="noopener">${esc(r.name)}</a>${r.unmerged_trunk
+            ? `<span class="warn" title="Default-Branch: ${esc(r.default_branch)}">⚠ trunk</span>` : ""}
+          <span class="org">${esc(r.org)}</span></div>
+        ${r.description ? `<div class="desc">${esc(r.description)}</div>` : ""}</td>
+      <td><span class="dom-tag">${esc(r.domain)}</span></td>
+      <td><span class="dom-tag">${esc(r.language || "—")}</span></td>
+      <td class="num" title="Tage zwischen erstem und letztem Push">${Math.round(r.lifespan_d)}d</td>
+      <td class="num" style="color:${dormTint}">${Math.round(r.dormant_d)}d</td>
+      <td><span class="pill" style="color:${TCOL[r.tier]}" title="${ACT_HINT[r.action]}">${r.action}</span></td>
+    </tr>`;
+  }).join("");
+}
+
+/* ── wiring ───────────────────────────────────────────────── */
+function toggleSet(set, val, el){
+  set.has(val) ? set.delete(val) : set.add(val);
+  el.setAttribute("aria-pressed", set.has(val));
+  render();
+}
+$("#tierbar").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (b) toggleSet(S.tiers, b.dataset.tier, b);
+});
+$("#rail").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (b) toggleSet(S.doms, b.dataset.dom, b);
+});
+$("#actions").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (b) toggleSet(S.acts, b.dataset.act, b);
+});
+$("#flags").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const id = b.dataset.flag;
+  S.flag = S.flag === id ? null : id;
+  document.querySelectorAll("[data-flag]").forEach(x =>
+    x.setAttribute("aria-pressed", x.dataset.flag === S.flag));
+  render();
+});
+$("#q").addEventListener("input", e => { S.q = e.target.value.trim().toLowerCase(); render(); });
+document.querySelectorAll("th.s").forEach(th => th.addEventListener("click", () => {
+  const k = th.dataset.k;
+  S.dir = S.sort === k ? -S.dir : (["name","domain","language","action"].includes(k) ? 1 : -1);
+  S.sort = k;
+  document.querySelectorAll("th.s").forEach(o => o.removeAttribute("aria-sort"));
+  th.setAttribute("aria-sort", S.dir === 1 ? "ascending" : "descending");
+  th.querySelector(".ar").textContent = S.dir === 1 ? "▲" : "▼";
+  render();
+}));
+$("#reset").addEventListener("click", () => {
+  S.tiers.clear(); S.doms.clear(); S.acts.clear(); S.flag = null; S.q = "";
+  $("#q").value = "";
+  document.querySelectorAll("[aria-pressed]").forEach(x => x.setAttribute("aria-pressed", "false"));
+  render();
+});
+
+render();
+</script>

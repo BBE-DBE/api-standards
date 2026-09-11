@@ -27,8 +27,11 @@ registry/
 scripts/
   fetch_repos.sh            # GitHub API  -> repos.snapshot.tsv
   build_registry.py         # snapshot    -> REGISTRY.yaml + docs/ASSET-REPORT.md
+  build_dashboard.py        # registry.json -> docs/dashboard.html
 docs/
   ASSET-REPORT.md           # GENERATED human view of the register
+  dashboard.template.html   # filter-surface template (source)
+  dashboard.html            # GENERATED filterable dashboard
 ```
 
 ## The asset register
@@ -55,6 +58,15 @@ python3 scripts/build_registry.py                            # verdicts
 Every verdict is reproducible from the snapshot; the rules live in
 `scripts/build_registry.py` so they can be argued with and changed, rather
 than negotiated per repo.
+
+`docs/dashboard.html` is the filter surface over the same data — search,
+filter by tier / domain / action, sort by reuse score. It carries no numbers
+of its own; `scripts/build_dashboard.py` inlines `registry/registry.json`
+into `docs/dashboard.template.html`, so there is no second source of truth:
+
+```bash
+python3 scripts/build_dashboard.py    # registry.json -> docs/dashboard.html
+```
 
 ## How a service references this
 
