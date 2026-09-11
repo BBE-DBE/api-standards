@@ -19,6 +19,12 @@
 #   version         current released or active version
 #   notes           short free-form
 #
+# Scope: this catalog lists RUNNING SERVICES — how to call them.
+# It does NOT list everything the house owns. The full estate (145 repos,
+# scored, clustered, one open decision each) is generated and lives in
+# BBE-DBE/oktogen-os -> estate/. Lookup order for PRINCIPLES.md 8:
+# Haus-Auskunft -> oktogen-os estate/ -> this file.
+#
 # Last verified: 2026-05-02
 
 version: 1
