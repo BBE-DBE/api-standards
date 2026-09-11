@@ -20,7 +20,41 @@ iso-mappings/
   27001-controls.md         # the controls we actually implement
 templates/
   status-report.md          # final-status format
+registry/
+  repos.snapshot.tsv        # raw GitHub facts (input, refreshed by a script)
+  REGISTRY.yaml             # GENERATED asset register — 145 repos, scored
+  registry.json             # GENERATED flat form for dashboards
+scripts/
+  fetch_repos.sh            # GitHub API  -> repos.snapshot.tsv
+  build_registry.py         # snapshot    -> REGISTRY.yaml + docs/ASSET-REPORT.md
+docs/
+  ASSET-REPORT.md           # GENERATED human view of the register
 ```
+
+## The asset register
+
+`registry/REGISTRY.yaml` is the machine-readable answer to PRINCIPLES.md 8
+(*Lookup-before-Build*). It carries every repo in `BBE-DBE/` and `SSR-SFS/`
+with:
+
+- `domain:` — the capability axis to search on before building anything new
+- `cluster:` + `canonical:` — which repos overlap, and which one wins
+- `tier:` — `CORE` / `ACTIVE` / `ASSET` / `SEED` / `DUMP`
+- `score:` — 0-100 reuse value (35 iteration + 30 freshness + 15 docs
+  + 10 clean trunk + 10 ratified)
+- `action:` — the single open decision: `KEEP` / `SHIP` / `REVIVE` /
+  `MERGE` / `ARCHIVE`
+
+**Never hand-edit the generated files.** Refresh instead:
+
+```bash
+GITHUB_TOKEN=... ./scripts/fetch_repos.sh BBE-DBE SSR-SFS   # facts
+python3 scripts/build_registry.py                            # verdicts
+```
+
+Every verdict is reproducible from the snapshot; the rules live in
+`scripts/build_registry.py` so they can be argued with and changed, rather
+than negotiated per repo.
 
 ## How a service references this
 

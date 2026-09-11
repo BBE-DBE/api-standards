@@ -24,8 +24,15 @@ listed in
    SHA-256 drift detection; structured pino logging; UUIDv7 externally,
    BIGSERIAL internally; Prometheus metrics; graceful shutdown.
 8. **Reuse-First / Lookup-before-Build.** Before any new capability is
-   implemented, the catalog at [`SERVICES.yaml`](SERVICES.yaml) MUST be
-   consulted. If an existing service already exposes the capability
+   implemented, two files MUST be consulted, in this order:
+   [`registry/REGISTRY.yaml`](registry/REGISTRY.yaml) — every repo in the
+   estate, scored and grouped by `domain:` and `cluster:` — and then the
+   service catalog at [`SERVICES.yaml`](SERVICES.yaml) for the running
+   services. The register answers "does something like this already
+   exist anywhere?"; the catalog answers "how do I call it?". A new repo
+   MUST NOT be created for a capability that an existing `cluster:`
+   already covers — extend the cluster's `canonical` repo instead.
+   If an existing service already exposes the capability
    (matching `services[*].capabilities`), the new code MUST consume it
    over HTTP — never copy logic, never re-implement. Cross-cutting
    concerns (auth, idempotency, errors, health, metrics, audit) MUST
