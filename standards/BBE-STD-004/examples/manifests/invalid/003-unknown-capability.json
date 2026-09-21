@@ -1,0 +1,14 @@
+{
+  "manifest_version": "1",
+  "id": "self-hosted/some-model",
+  "vendor": "self-hosted",
+  "model": "some-model",
+  "role": "candidate",
+  "deployment": "on_prem",
+  "wire": "openai_chat",
+  "credential_ref": "env:LOCAL_LLM_TOKEN",
+  "context_tokens": 32768,
+  "max_output_tokens": 4096,
+  "capabilities": { "tools": true, "json_mode": true, "streaming": true, "system_prompt": true, "reasoning_mode": true },
+  "sovereignty": { "data_region": "self", "weights_portable": true, "runs_offline": true }
+}

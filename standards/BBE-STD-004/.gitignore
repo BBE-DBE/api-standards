@@ -1,0 +1,9 @@
+# bbe-port runtime artifacts (never committed)
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+# Portability reports are per-host measurements, not repo content. A service
+# stores its own report in its own repo; the example fixtures here are the
+# only committed run data.
+reports/

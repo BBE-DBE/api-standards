@@ -61,6 +61,35 @@ codes:
       `details` carries `{ retry_after_seconds }`. The same value is
       also in the standard `Retry-After` header.
 
+  # ---- 4xx — provider/model surface (BBE-STD-004) ------------
+  not_supported_by_provider:
+    http: 501
+    description: |
+      The caller asked for a capability the configured provider does not
+      have (an adapter method the vendor lacks; a model capability the
+      manifest declares false). Referenced by
+      protocols/provider-adapter-interface.md and
+      protocols/model-provider-adapter.md. `details` carries
+      `{ adapter_id, capability }`.
+  context_length_exceeded:
+    http: 422
+    description: |
+      Request exceeds the model's context window. `details` carries
+      `{ needed_tokens, context_tokens, manifest_id }`. Distinct from
+      `invalid_input`: the body is well-formed, the target is too small.
+  provider_rate_limited:
+    http: 429
+    description: |
+      Upstream provider returned a rate-limit. Distinct from
+      `too_many_failed_auth` (our own brute-force counter). `details`
+      carries `{ manifest_id, retry_after_seconds }`.
+  content_filtered:
+    http: 422
+    description: |
+      The provider refused or truncated the response on its own content
+      policy. Recorded verbatim in the audit trail; never silently retried
+      against a second provider without an explicit policy decision.
+
   # ---- 5xx — our problem ------------------------------------
   internal:
     http: 500
@@ -72,3 +101,10 @@ codes:
     description: |
       Subsystem (DB, sweeper, listener) not yet healthy. Used by
       `/health/ready` and orchestrators.
+  model_unavailable:
+    http: 503
+    description: |
+      The configured model or provider endpoint is unreachable, overloaded,
+      or has been deprecated by the vendor. This is the code that triggers
+      fallback routing (BBE-STD-004 §8). `details` carries
+      `{ manifest_id, attempted }`.

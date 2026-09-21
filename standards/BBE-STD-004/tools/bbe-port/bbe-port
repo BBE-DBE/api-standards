@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+"""Canonical entrypoint for the BBE-STD-004 reference CLI.
+
+Run from a checkout, as with bbe-comm (BBE-STD-002 ratification note R4):
+no PyPI package, no /usr/local/bin symlink.
+"""
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from bbe_port.cli import main  # noqa: E402
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -22,7 +22,7 @@
 # Last verified: 2026-05-02
 
 version: 1
-catalog_updated: "2026-05-02"
+catalog_updated: "2026-09-21"
 
 services:
 
@@ -40,9 +40,14 @@ services:
       - protocols
       - service-skeleton-template
       - iso-mappings
+      - agent-communication-protocol    # BBE-STD-002 (RATIFIED)
+      - model-provider-portability      # BBE-STD-004 (DRAFT) — manifest lint,
+                                        # swap check, portability gate.
+                                        # Before wiring any service to an LLM
+                                        # vendor SDK: consume this contract.
     reuse_priority: 0
     status: prod
-    version: "2026.04.30"
+    version: "2026.09.21"
     notes: "This catalog lives here. Every service pins a min version."
 
   infra-postgres:

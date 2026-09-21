@@ -1,0 +1,11 @@
+{
+  "task_version": "1",
+  "id": "classify-support-ticket",
+  "category": "classification",
+  "weight": 2,
+  "system": "Du klassifizierst Support-Tickets. Antworte mit genau einem Wort aus: abrechnung, technik, vertrieb, missbrauch.",
+  "prompt": "Ticket: 'Unsere reservierte IP 203.0.113.44 antwortet seit heute Nacht nicht mehr auf Ping, das Monitoring schlaegt Alarm.'",
+  "checks": [
+    { "type": "equals_normalized", "value": "technik" }
+  ]
+}
