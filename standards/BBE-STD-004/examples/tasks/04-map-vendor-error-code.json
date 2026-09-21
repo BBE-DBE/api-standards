@@ -1,0 +1,12 @@
+{
+  "task_version": "1",
+  "id": "map-vendor-error-code",
+  "category": "reasoning",
+  "weight": 3,
+  "system": "Du bildest Vendor-Fehler auf die BBE-Error-Code-Registry ab. Antworte mit genau einem Code.",
+  "prompt": "Ein Provider antwortet mit HTTP 409 und dem Body: 'same Idempotency-Key submitted with a different request body'. Welcher BBE-Error-Code ist korrekt? Auswahl: conflict, idempotency_mismatch, invalid_input, illegal_state_transition.",
+  "checks": [
+    { "type": "equals_normalized", "value": "idempotency_mismatch" }
+  ],
+  "notes": "The generic 'conflict' is the plausible wrong answer. protocols/error-codes.yaml requires the specific sub-code."
+}

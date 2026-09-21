@@ -18,8 +18,15 @@ checklists/
   new-service-bootstrap.md  # what every new service must ship with
 iso-mappings/
   27001-controls.md         # the controls we actually implement
+protocols/
+  *.md, *.yaml              # cross-service contracts (errors, audit, adapters)
+standards/
+  BBE-STD-002/              # Agent Communication Protocol (RATIFIED)
+  BBE-STD-004/              # Model Provider Portability (DRAFT)
 templates/
   status-report.md          # final-status format
+scripts/
+  test-std-00*.sh           # per-standard CI gates
 ```
 
 ## How a service references this

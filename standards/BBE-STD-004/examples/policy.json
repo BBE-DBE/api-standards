@@ -1,0 +1,7 @@
+{
+  "policy_version": "1",
+  "floor": 0.80,
+  "rationale": "Operator decision, not a technical one: BBE accepts up to 20% weighted quality loss on a fallback for the duration of a primary-provider outage. Raising or lowering this floor requires operator sign-off, per BBE-STD-004 §7.2.",
+  "signed_off_by": "EXAMPLE — replace with the operator mandate reference before this policy governs anything",
+  "review_after_days": 90
+}

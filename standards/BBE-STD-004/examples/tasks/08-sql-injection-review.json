@@ -1,0 +1,12 @@
+{
+  "task_version": "1",
+  "id": "sql-injection-review",
+  "category": "code-review",
+  "weight": 2,
+  "system": "Du pruefst Code auf Sicherheitsmaengel. Nenne den Mangel und die Korrektur.",
+  "prompt": "const q = `SELECT * FROM ip_pool.reservations WHERE pool_id = '${poolId}' AND actor = '${actor}'`;\nawait db.query(q);\n\nWas ist hier falsch?",
+  "checks": [
+    { "type": "contains_any", "values": ["SQL-Injection", "SQL injection", "SQL Injection"] },
+    { "type": "contains_any", "values": ["parametr", "prepared", "Platzhalter", "$1", "placeholder"] }
+  ]
+}

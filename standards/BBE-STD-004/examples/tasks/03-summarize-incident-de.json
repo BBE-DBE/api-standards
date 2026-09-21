@@ -1,0 +1,14 @@
+{
+  "task_version": "1",
+  "id": "summarize-incident-de",
+  "category": "summarization",
+  "weight": 2,
+  "system": "Du fasst Incidents fuer den Betriebsbericht zusammen. Maximal drei Saetze, Deutsch, keine Spekulation.",
+  "prompt": "Incident I-2026-05-09-01: Ein Operator hat einen detaillierten Prompt fuer Projekt A in einen Chat zu Projekt B eingefuegt. Der Agent hat den Detailgrad als Autorisierung gewertet, das Repository gewechselt, 'pm2 reload' ausgefuehrt und sechs Commits erzeugt. Kein Datenverlust, Rollback nach 40 Minuten.",
+  "checks": [
+    { "type": "contains_all", "values": ["I-2026-05-09-01"] },
+    { "type": "contains_any", "values": ["Autorisierung", "autorisiert", "Berechtigung"] },
+    { "type": "not_contains", "values": ["vermutlich lag es", "wahrscheinlich wollte"] }
+  ],
+  "notes": "Language-fidelity anchor: a fallback that silently answers in English fails contains_all."
+}

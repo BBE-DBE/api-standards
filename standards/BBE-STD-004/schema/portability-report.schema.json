@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://standards.bbe-dbe.internal/BBE-STD-004/portability-report.schema.json",
+  "title": "BBE-STD-004 Portability Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["report_version", "generated_at", "manifest_id", "corpus_hash", "floor", "score", "verdict", "totals", "tasks"],
+  "properties": {
+    "report_version": { "const": "1" },
+    "generated_at": { "type": "string", "description": "RFC3339 UTC" },
+    "manifest_id": { "type": "string" },
+    "transport": { "type": "string" },
+    "corpus_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "corpus_size": { "type": "integer", "minimum": 0 },
+    "floor": { "type": "number", "minimum": 0, "maximum": 1 },
+    "score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "verdict": { "enum": ["QUALIFIED", "QUALIFIED_DEGRADED", "NOT_QUALIFIED"] },
+    "totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed", "failed", "blocked", "passed_weight", "scored_weight", "blocked_weight"],
+      "properties": {
+        "passed": { "type": "integer" },
+        "failed": { "type": "integer" },
+        "blocked": { "type": "integer" },
+        "passed_weight": { "type": "integer" },
+        "scored_weight": { "type": "integer" },
+        "blocked_weight": { "type": "integer" }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input_tokens": { "type": "integer" },
+        "output_tokens": { "type": "integer" },
+        "wall_ms": { "type": "integer" }
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "outcome", "weight"],
+        "properties": {
+          "id": { "type": "string" },
+          "outcome": { "enum": ["passed", "failed", "blocked"] },
+          "weight": { "type": "integer" },
+          "reason": { "type": "string" },
+          "failed_checks": { "type": "array", "items": { "type": "string" } },
+          "excerpt": { "type": "string", "maxLength": 200, "description": "Max 200 chars per BBE-STD-004 §7.3. Full transcripts go to the audit store." }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://standards.bbe-dbe.internal/BBE-STD-004/model-provider-manifest.schema.json",
+  "title": "BBE-STD-004 Model Provider Manifest",
+  "description": "Machine-readable capability descriptor for one provider/model pair. Contains NO credential material.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest_version", "id", "vendor", "model", "role", "deployment", "wire", "credential_ref", "context_tokens", "max_output_tokens", "capabilities", "sovereignty"],
+  "properties": {
+    "manifest_version": { "const": "1" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*/[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "description": "<vendor>/<model>. MUST equal ModelProviderAdapter.id."
+    },
+    "vendor": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "model": { "type": "string", "minLength": 1 },
+    "role": { "enum": ["primary", "fallback", "offline_fallback", "candidate"] },
+    "deployment": { "enum": ["saas", "self_hosted", "on_prem"] },
+    "wire": {
+      "enum": ["anthropic_messages", "openai_chat", "openai_responses", "google_generative", "custom"],
+      "description": "Transport dialect. 'openai_chat' covers self-hosted vLLM / llama.cpp servers."
+    },
+    "endpoint_env": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]*$",
+      "description": "Name of the env var holding the base URL. Not the URL itself."
+    },
+    "credential_ref": {
+      "type": "string",
+      "pattern": "^(vault://[A-Za-z0-9/_.-]+|env:[A-Z][A-Z0-9_]*)$",
+      "description": "Reference only. Inline secrets fail BBE-PORT-004."
+    },
+    "context_tokens": { "type": "integer", "minimum": 1 },
+    "max_output_tokens": { "type": "integer", "minimum": 1 },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tools", "json_mode", "streaming", "system_prompt"],
+      "properties": {
+        "tools": { "type": "boolean" },
+        "json_mode": { "type": "boolean" },
+        "streaming": { "type": "boolean" },
+        "system_prompt": { "type": "boolean" },
+        "vision": { "type": "boolean" },
+        "prompt_cache": { "type": "boolean" }
+      }
+    },
+    "sovereignty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["data_region", "weights_portable", "runs_offline"],
+      "properties": {
+        "data_region": {
+          "type": "string",
+          "description": "ISO-3166 alpha-2 lowercase, 'eu', or 'self'. Feeds the DSGVO Art. 30 record."
+        },
+        "weights_portable": {
+          "type": "boolean",
+          "description": "true only if the weights are in our possession and licensed for our use. An API we can call is NOT portable."
+        },
+        "runs_offline": {
+          "type": "boolean",
+          "description": "true if inference works with no egress to a third party."
+        }
+      }
+    },
+    "cost_per_mtok": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input", "output", "currency"],
+      "properties": {
+        "input": { "type": "number", "minimum": 0 },
+        "output": { "type": "number", "minimum": 0 },
+        "currency": { "enum": ["EUR", "USD"] }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}

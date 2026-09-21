@@ -1,0 +1,14 @@
+{
+  "task_version": "1",
+  "id": "call-ip-reservation-tool",
+  "category": "tool-use",
+  "weight": 3,
+  "requires": ["tools", "json_mode"],
+  "system": "Du rufst Werkzeuge auf. Verfuegbar: reserve_ip(pool_id: string, count: integer, idempotency_key: string).",
+  "prompt": "Reserviere drei Adressen aus Pool 'pool-fra-01'. Verwende den Idempotency-Key 'req-7f3a91'. Gib den Werkzeugaufruf als JSON mit den Feldern tool und arguments zurueck.",
+  "checks": [
+    { "type": "json_has_keys", "keys": ["tool", "arguments"] },
+    { "type": "contains_all", "values": ["reserve_ip", "pool-fra-01", "req-7f3a91"] }
+  ],
+  "notes": "Blocks on any provider without tools. That is the point: a fallback lacking tool use does not silently score badly, it reports the gap."
+}

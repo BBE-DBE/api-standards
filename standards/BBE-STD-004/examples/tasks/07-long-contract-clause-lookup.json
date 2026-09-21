@@ -1,0 +1,13 @@
+{
+  "task_version": "1",
+  "id": "long-contract-clause-lookup",
+  "category": "long-context",
+  "weight": 2,
+  "min_context_tokens": 180000,
+  "system": "Du beantwortest Fragen zu Vertragswerken. Zitiere die Klauselnummer.",
+  "prompt": "[Im Betrieb wird hier das vollstaendige Rahmenvertragswerk eingesetzt, ca. 175k Tokens.] Frage: Welche Klausel regelt die Kuendigungsfrist bei Nichtverfuegbarkeit ueber 72 Stunden?",
+  "checks": [
+    { "type": "regex", "pattern": "(?:Klausel|§)\\s*\\d+" }
+  ],
+  "notes": "Context-window regression anchor. min_context_tokens blocks this task on small models instead of pretending they failed it."
+}

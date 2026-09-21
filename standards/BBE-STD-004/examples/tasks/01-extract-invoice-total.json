@@ -1,0 +1,15 @@
+{
+  "task_version": "1",
+  "id": "extract-invoice-total",
+  "category": "extraction",
+  "weight": 3,
+  "requires": ["json_mode"],
+  "system": "Du extrahierst strukturierte Daten aus Belegen. Antworte ausschliesslich mit JSON.",
+  "prompt": "Rechnung RE-2026-0417, Leistungszeitraum 03/2026.\nPosition 1: Serverwartung 900,00 EUR\nPosition 2: IP-Kontingent 100,00 EUR\nZwischensumme 1000,00 EUR\nUmsatzsteuer 19% 190,00 EUR\nGesamtbetrag 1190,00 EUR\n\nGib invoice_no, net_eur, vat_eur und total_eur als JSON zurueck.",
+  "checks": [
+    { "type": "json_has_keys", "keys": ["invoice_no", "net_eur", "vat_eur", "total_eur"] },
+    { "type": "contains_all", "values": ["RE-2026-0417", "1190"] },
+    { "type": "not_contains", "values": ["ich kann", "i cannot"] }
+  ],
+  "notes": "Regression anchor for the extraction path. VAT is included so a model that copies the subtotal into total_eur fails loudly."
+}

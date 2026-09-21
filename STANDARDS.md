@@ -11,18 +11,39 @@ specific deviations live in each service's own `STANDARDS.md`.
 | Error-code registry  | [`protocols/error-codes.yaml`](protocols/error-codes.yaml)                              |
 | Health response shapes | [`protocols/health-response-schema.yaml`](protocols/health-response-schema.yaml)      |
 | Secrets vault        | [`protocols/secrets-vault.md`](protocols/secrets-vault.md)                              |
+| Model-provider adapter | [`protocols/model-provider-adapter.md`](protocols/model-provider-adapter.md)          |
 
 ## Ratified standards registry
 
 | Standard ID  | Title                            | Version    | Status                          | Location                                                                  |
 |--------------|----------------------------------|------------|---------------------------------|---------------------------------------------------------------------------|
 | BBE-STD-002  | Agent Communication Protocol     | v1.0.0     | RATIFIED                                                              | [`standards/BBE-STD-002/`](standards/BBE-STD-002/) |
+| BBE-STD-004  | Model Provider Portability       | v0.1.0     | DRAFT                                                                 | [`standards/BBE-STD-004/`](standards/BBE-STD-004/) |
 
 **BBE-STD-002 notes:**
 - Runtime-agnostic per [ADR-0003](standards/BBE-STD-002/docs/adr/0003-runtime-agnostic-posture.md). The BBE deployment runtime binding lives in `bbe-server-config/configs/bbe-guard/`.
 - HMAC-anchored authorization sits at L4. L5 (signature/ledger/attestation) reserved for the deferred BBE-STD-003.
 - Reference linter + CLI: `standards/BBE-STD-002/tools/bbe-comm/`. Run `scripts/test-std-002.sh` for the ratification gate.
 - Phase D rollout: 14-day warning window 2026-05-13 → 2026-05-27; hard floors take effect 2026-05-28.
+
+**BBE-STD-004 notes:**
+- **DRAFT — binds no service yet.** Reserved ID note: `BBE-STD-003` stays
+  reserved for Audit-Store & Message Persistence; portability took the next
+  free ID.
+- Answers "what happens when our model provider is switched off" with two
+  numbers per service: **RTO-model** (minutes to switch) and **QLO** (measured
+  score of the qualified fallback). A claim of provider independence without
+  both is marketing, not a control.
+- Conformance levels P0–P4 (§3). Target for services that embed an AI system:
+  **P4** — at least one non-primary provider measured `QUALIFIED` within 90 days.
+- Reference CLI: `standards/BBE-STD-004/tools/bbe-port/`. Run
+  `scripts/test-std-004.sh` for the gate (offline, no credentials, stdlib only).
+- Cross-service pointer: [`protocols/model-provider-adapter.md`](protocols/model-provider-adapter.md).
+  Inherits the cross-cutting obligations of
+  [`protocols/provider-adapter-interface.md`](protocols/provider-adapter-interface.md)
+  rather than restating them (ADR-0001).
+- Ratification blockers: one service at P3 with a stored report, §10 D1, and an
+  operator mandate.
 
 ## Hard rules (every service)
 

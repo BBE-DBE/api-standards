@@ -1,0 +1,14 @@
+{
+  "manifest_version": "1",
+  "id": "self-hosted/broken-limits",
+  "vendor": "self-hosted",
+  "model": "broken-limits",
+  "role": "candidate",
+  "deployment": "self_hosted",
+  "wire": "openai_chat",
+  "credential_ref": "env:LOCAL_LLM_TOKEN",
+  "context_tokens": 8192,
+  "max_output_tokens": 32768,
+  "capabilities": { "tools": false, "json_mode": false, "streaming": true, "system_prompt": true },
+  "sovereignty": { "data_region": "de", "weights_portable": true, "runs_offline": true }
+}

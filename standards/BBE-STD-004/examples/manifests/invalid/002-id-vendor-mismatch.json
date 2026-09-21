@@ -1,0 +1,14 @@
+{
+  "manifest_version": "1",
+  "id": "anthropic/claude-opus-5",
+  "vendor": "openai",
+  "model": "claude-opus-5",
+  "role": "primary",
+  "deployment": "saas",
+  "wire": "openai_chat",
+  "credential_ref": "vault://llm/openai/api-key",
+  "context_tokens": 200000,
+  "max_output_tokens": 32000,
+  "capabilities": { "tools": true, "json_mode": true, "streaming": true, "system_prompt": true },
+  "sovereignty": { "data_region": "us", "weights_portable": false, "runs_offline": false }
+}

@@ -1,0 +1,27 @@
+{
+  "manifest_version": "1",
+  "id": "self-hosted/qwen3-32b-instruct",
+  "vendor": "self-hosted",
+  "model": "qwen3-32b-instruct",
+  "role": "offline_fallback",
+  "deployment": "on_prem",
+  "wire": "openai_chat",
+  "endpoint_env": "LOCAL_LLM_BASE_URL",
+  "credential_ref": "env:LOCAL_LLM_TOKEN",
+  "context_tokens": 32768,
+  "max_output_tokens": 8192,
+  "capabilities": {
+    "tools": false,
+    "json_mode": true,
+    "streaming": true,
+    "system_prompt": true,
+    "vision": false,
+    "prompt_cache": false
+  },
+  "sovereignty": {
+    "data_region": "self",
+    "weights_portable": true,
+    "runs_offline": true
+  },
+  "notes": "EXAMPLE. Open weights on own hardware behind an OpenAI-compatible server (vLLM/llama.cpp). This is the only row where weights_portable is true — nobody can revoke it. It is also the least capable row; the gate is what turns that trade-off into a number instead of an argument."
+}

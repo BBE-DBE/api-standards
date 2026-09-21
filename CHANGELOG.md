@@ -4,6 +4,51 @@ Calendar versioning: **YYYY.MM.DD**. Tags are immutable; new policies
 land as a new tag, services pin a minimum version they were last
 validated against.
 
+## [2026.09.21] - 2026-09-21
+
+Model-provider portability. The ecosystem's LLM dependency was, until now,
+undeclared and unmeasured: nothing in the repo said which provider a service
+talks to, what that provider can do, or what would break if it went away.
+This tag adds the contract and the instrument that answers it.
+
+The load-bearing idea: the expensive dependency is never the model. Models are
+substitutable — several vendors sell one. What is not substitutable is the
+layer above (prompts, agent loops, tool definitions, and the evaluation set
+that says whether a swap is safe). These additions keep that layer
+provider-shaped instead of vendor-shaped.
+
+### Added
+- **`standards/BBE-STD-004/` — Model Provider Portability v0.1.0 (DRAFT).**
+  Spec, three JSON schemas, reference CLI (`bbe-port`), golden corpus,
+  ADR-0001, quickstart, 50 offline tests. Conformance levels P0–P4. Binds no
+  service until ratified; see the standard's own CHANGELOG for detail.
+- `protocols/model-provider-adapter.md` — cross-service pointer, listed in
+  STANDARDS.md under "Cross-service contracts". Inherits the cross-cutting
+  obligations of `protocols/provider-adapter-interface.md` (retries, rate
+  limits, redaction, error mapping, audit) by reference rather than by copy;
+  the reasoning is in ADR-0001.
+- `scripts/test-std-004.sh` — CI gate, mirroring `scripts/test-std-002.sh`.
+  Runs fully offline: no credentials, no network, standard library only.
+- `SERVICES.yaml` — `api-standards` now advertises the
+  `model-provider-portability` and `agent-communication-protocol`
+  capabilities, so Reuse-First lookups (PRINCIPLES.md §8) find them before a
+  service wires a vendor SDK directly.
+
+### Added — error-code registry
+Five codes for the provider/model surface. Services adopting BBE-STD-004 add
+them to their `src/lib/errors.ts` union; services that call no LLM are
+unaffected:
+- `not_supported_by_provider` (501) — also closes a dangling reference: the
+  existing `protocols/provider-adapter-interface.md` required this code, and
+  it was never in the registry.
+- `context_length_exceeded` (422), `provider_rate_limited` (429),
+  `content_filtered` (422), `model_unavailable` (503).
+
+### Notes
+- `BBE-STD-003` remains reserved for Audit-Store & Message Persistence. The
+  portability standard took the next free ID rather than the next number.
+- Calver bumped per the error-codes.yaml amendment procedure.
+
 ## [2026.05.02] - 2026-05-02
 
 Skeleton-Validierungs-Patch. Bugs aus dem ersten echten Bootstrap-Versuch

@@ -1,0 +1,13 @@
+{
+  "manifest_version": "1",
+  "id": "openai/gpt-5",
+  "vendor": "openai",
+  "model": "gpt-5",
+  "role": "fallback",
+  "deployment": "saas",
+  "wire": "openai_chat",
+  "credential_ref": "vault://llm/openai/api-key",
+  "context_tokens": 200000,
+  "max_output_tokens": 32000,
+  "capabilities": { "tools": true, "json_mode": true, "streaming": true, "system_prompt": true }
+}
