@@ -18,26 +18,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Node einrichten (.nvmrc vorhanden)
-        if: hashFiles('package.json') != '' && hashFiles('.nvmrc') != ''
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-
-      - name: Node einrichten (ohne .nvmrc)
-        if: hashFiles('package.json') != '' && hashFiles('.nvmrc') == ''
+      # Kein `cache: npm` an setup-node: das verlangt eine Sperrdatei und
+      # bricht ab, wenn das Repo nur package.json hat. Zwischenspeicher
+      # darum getrennt und nur dann, wenn eine Sperrdatei existiert.
+      - name: Node einrichten
+        if: hashFiles('package.json') != ''
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: npm
+
+      - name: npm-Zwischenspeicher
+        if: hashFiles('package-lock.json', 'npm-shrinkwrap.json') != ''
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json', 'npm-shrinkwrap.json') }}
+          restore-keys: npm-${{ runner.os }}-
 
       - name: Abhaengigkeiten installieren
         if: hashFiles('package.json') != ''
-        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+        run: |
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
 
       - name: Python einrichten
-        if: hashFiles('pyproject.toml') != ''
+        if: hashFiles('pyproject.toml', 'requirements.txt') != ''
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -45,7 +53,17 @@ jobs:
       - name: uv einrichten
         if: hashFiles('pyproject.toml') != ''
         uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
 
       - name: Python-Abhaengigkeiten
-        if: hashFiles('pyproject.toml') != ''
-        run: uv sync --all-extras || uv pip install -e .
+        if: hashFiles('pyproject.toml', 'requirements.txt') != ''
+        run: |
+          if [ -f pyproject.toml ]; then
+            uv sync --all-extras || uv pip install --system -e . || true
+          else
+            python -m pip install --quiet -r requirements.txt
+          fi
+
+      # Ein Repo, das eine festgelegte Node- oder Python-Fassung braucht,
+      # ergaenzt dafuer einen eigenen Schritt. Diese Datei bleibt die Grundlage.
