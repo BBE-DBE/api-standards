@@ -1,0 +1,51 @@
+# Umgebung, die GitHub Copilot im Coding-Agent-Lauf vorfindet.
+# Der Job MUSS "copilot-setup-steps" heissen, sonst wird er ignoriert.
+# Doku: https://docs.github.com/copilot/customizing-copilot/customizing-the-development-environment-for-copilot-coding-agent
+name: Copilot-Umgebung
+
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/copilot-setup-steps.yml']
+  pull_request:
+    paths: ['.github/workflows/copilot-setup-steps.yml']
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node einrichten (.nvmrc vorhanden)
+        if: hashFiles('package.json') != '' && hashFiles('.nvmrc') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Node einrichten (ohne .nvmrc)
+        if: hashFiles('package.json') != '' && hashFiles('.nvmrc') == ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Abhaengigkeiten installieren
+        if: hashFiles('package.json') != ''
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+
+      - name: Python einrichten
+        if: hashFiles('pyproject.toml') != ''
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: uv einrichten
+        if: hashFiles('pyproject.toml') != ''
+        uses: astral-sh/setup-uv@v5
+
+      - name: Python-Abhaengigkeiten
+        if: hashFiles('pyproject.toml') != ''
+        run: uv sync --all-extras || uv pip install -e .
