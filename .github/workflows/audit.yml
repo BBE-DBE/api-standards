@@ -1,0 +1,117 @@
+# Wiederkehrende Pruefung. Eigenstaendige Fassung fuer persoenliche Konten;
+# Repos in einer Organisation rufen audit-zentral.yml auf.
+name: Audit
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  # MONATLICH, nicht woechentlich: 127 Repos x 1 Job = ~127 Abrechnungsminuten
+  # je Durchgang. Woechentlich waeren das 76 % des Freibetrags von 2000 Min.
+  schedule:
+    - cron: '0 5 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# EIN Job statt drei: GitHub rechnet je Job auf ganze Minuten auf. Drei Jobs
+# mit je ~20 s kosten 3 Minuten, ein Job mit 66 s kostet 2. Ueber 127
+# Repositories sind das 381 statt 127 Minuten je Durchgang.
+jobs:
+  audit:
+    name: Geheimnisse, Abhaengigkeiten, Pflichtdateien
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      # --- Geheimnisse -------------------------------------------------
+      # Das gitleaks-WERKZEUG ist frei; nur der Action-Aufsatz verlangt fuer
+      # Organisationen eine Lizenz. Darum direkt das Binaerpaket.
+      - name: gitleaks holen
+        run: |
+          set -euo pipefail
+          V=8.30.1
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${V}/gitleaks_${V}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
+
+      - name: Verlauf auf Geheimnisse pruefen
+        id: geheim
+        continue-on-error: true
+        run: gitleaks detect --redact --no-banner --exit-code 1 --report-format sarif --report-path gitleaks.sarif
+
+      - name: Befund ablegen
+        if: steps.geheim.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with: { name: gitleaks-befund, path: gitleaks.sarif, if-no-files-found: ignore }
+
+      # --- Abhaengigkeiten ---------------------------------------------
+      # dependency-review-action verlangt auf privaten Repos GitHub Advanced
+      # Security. npm audit und pip-audit koennen dasselbe ohne Zusatzplan.
+      - uses: actions/setup-node@v4
+        if: hashFiles('package-lock.json', 'npm-shrinkwrap.json') != ''
+        with: { node-version: lts/* }
+
+      - name: npm audit
+        id: npm
+        if: hashFiles('package-lock.json', 'npm-shrinkwrap.json') != ''
+        continue-on-error: true
+        run: npm audit --audit-level=high
+
+      - uses: actions/setup-python@v5
+        if: hashFiles('requirements.txt', 'pyproject.toml') != ''
+        with: { python-version: '3.12' }
+
+      - name: pip-audit
+        id: pip
+        if: hashFiles('requirements.txt', 'pyproject.toml') != ''
+        continue-on-error: true
+        run: |
+          python -m pip install --quiet pip-audit
+          if [ -f requirements.txt ]; then pip-audit -r requirements.txt --strict
+          else pip-audit --strict; fi
+
+      # --- Pflichtdateien ----------------------------------------------
+      - name: Pflichtdateien nach ssr-engineering-standard
+        id: pflicht
+        run: |
+          fehlt=0
+          pruefe() {
+            [ -e "$1" ] || { echo "::warning file=$1::Pflichtdatei fehlt: $1"; fehlt=$((fehlt+1)); }
+          }
+          pruefe README.md
+          pruefe AGENTS.md
+          pruefe CLAUDE.md
+          pruefe CHANGELOG.md
+          pruefe SECURITY.md
+          pruefe CODEOWNERS
+          pruefe .github/copilot-instructions.md
+          [ -d docs/adr ] || { echo "::warning::docs/adr/ fehlt"; fehlt=$((fehlt+1)); }
+          echo "fehlt=$fehlt" >> "$GITHUB_OUTPUT"
+
+      # --- Urteil -------------------------------------------------------
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          g='${{ steps.geheim.outcome }}'; nn='${{ steps.npm.outcome }}'
+          pp='${{ steps.pip.outcome }}';  f='${{ steps.pflicht.outputs.fehlt }}'
+          {
+            echo "## Audit"
+            echo
+            echo "| Pruefung | Ergebnis |"
+            echo "|---|---|"
+            echo "| Geheimnisse (gitleaks) | ${g/failure/**FUNDE** — SARIF als Artefakt} |"
+            echo "| npm audit | ${nn:-uebersprungen} |"
+            echo "| pip-audit | ${pp:-uebersprungen} |"
+            echo "| Fehlende Pflichtdateien | ${f:-?} |"
+            echo
+            echo 'Maßgeblich: `SSR-AII/ssr-engineering-standard` → STANDARD.md'
+          } >> "$GITHUB_STEP_SUMMARY"
+          # Rot nur bei Sicherheitsbefunden. Fehlende Pflichtdateien sind
+          # Warnungen: sie sollen main nicht rot machen.
+          [ "$g" = failure ] && { echo "::error::Geheimnis-Funde im Verlauf"; exit 1; }
+          [ "$nn" = failure ] && { echo "::error::npm audit: Luecken ab Stufe high"; exit 1; }
+          [ "$pp" = failure ] && { echo "::error::pip-audit: bekannte Luecken"; exit 1; }
+          exit 0

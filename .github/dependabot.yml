@@ -1,0 +1,26 @@
+# Abhaengigkeits-Aktualisierung. Oekosysteme, die es im Repo nicht gibt,
+# ignoriert Dependabot stillschweigend — die Datei darf ueberall gleich sein.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly, day: monday, time: "05:00", timezone: Europe/Berlin }
+    commit-message: { prefix: "chore" }
+    open-pull-requests-limit: 5
+    groups:
+      actions: { patterns: ["*"] }
+
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly, day: monday, time: "05:00", timezone: Europe/Berlin }
+    commit-message: { prefix: "chore", prefix-development: "chore" }
+    open-pull-requests-limit: 5
+    groups:
+      produktiv: { dependency-type: production, update-types: [minor, patch] }
+      entwicklung: { dependency-type: development }
+
+  - package-ecosystem: pip
+    directory: /
+    schedule: { interval: weekly, day: monday, time: "05:00", timezone: Europe/Berlin }
+    commit-message: { prefix: "chore" }
+    open-pull-requests-limit: 5

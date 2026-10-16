@@ -1,0 +1,10 @@
+# Wer gegenlesen muss. Letzte passende Zeile gewinnt.
+# Automatische Review-Anforderung greift erst mit GitHub Team + Ruleset
+# (privates Repo auf dem Free-Plan kann Reviews nicht erzwingen).
+
+*                           @BBE-DBE
+
+# Sicherheitsrelevantes zusaetzlich beim Zweitkonto
+/.github/                   @BBE-DBE @SSR-AII
+/SECURITY.md                @BBE-DBE @SSR-AII
+/.env.example               @BBE-DBE @SSR-AII
