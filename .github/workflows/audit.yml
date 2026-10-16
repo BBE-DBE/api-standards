@@ -1,0 +1,100 @@
+# Wiederkehrende Pruefung: Geheimnisse, Abhaengigkeiten, Pflichtdateien.
+# Eigenstaendige Fassung fuer Repos auf persoenlichen Konten. Repos in einer
+# Organisation rufen stattdessen SSR-SFS/.github/.../audit-zentral.yml auf.
+name: Audit
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  geheimnisse:
+    name: Geheimnis-Scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      # Das gitleaks-WERKZEUG ist frei; nur der Action-Aufsatz verlangt fuer
+      # Organisationen eine Lizenz. Darum direkt das Binaerpaket verwenden.
+      - name: gitleaks holen
+        run: |
+          set -euo pipefail
+          V=8.30.1
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${V}/gitleaks_${V}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
+      - name: Verlauf pruefen
+        run: gitleaks detect --redact --no-banner --exit-code 1 --report-format sarif --report-path gitleaks.sarif
+      - name: Befund ablegen
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with: { name: gitleaks-befund, path: gitleaks.sarif, if-no-files-found: ignore }
+
+  abhaengigkeiten:
+    name: Abhaengigkeits-Pruefung
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      # dependency-review-action verlangt auf privaten Repos GitHub Advanced
+      # Security. npm audit und pip-audit koennen dasselbe ohne Zusatzplan.
+      - uses: actions/setup-node@v4
+        if: hashFiles('package-lock.json', 'npm-shrinkwrap.json') != ''
+        with: { node-version: 'lts/*' }
+      - name: npm audit
+        if: hashFiles('package-lock.json', 'npm-shrinkwrap.json') != ''
+        run: npm audit --audit-level=high
+      - uses: actions/setup-python@v5
+        if: hashFiles('requirements.txt', 'pyproject.toml') != ''
+        with: { python-version: '3.12' }
+      - name: pip-audit
+        if: hashFiles('requirements.txt', 'pyproject.toml') != ''
+        run: |
+          python -m pip install --quiet pip-audit
+          if [ -f requirements.txt ]; then pip-audit -r requirements.txt --strict
+          else pip-audit --strict; fi
+      - name: Nichts zu pruefen
+        if: hashFiles('package-lock.json', 'npm-shrinkwrap.json', 'requirements.txt', 'pyproject.toml') == ''
+        run: echo "Keine Sperrdatei und kein pyproject.toml — nichts zu pruefen."
+
+  standard:
+    name: Pflichtdateien nach ssr-engineering-standard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pruefen
+        id: p
+        run: |
+          fehlt=0
+          pruefe() {
+            if [ ! -e "$1" ]; then
+              echo "::warning file=$1::Pflichtdatei fehlt: $1"
+              fehlt=$((fehlt+1))
+            fi
+          }
+          pruefe README.md
+          pruefe AGENTS.md
+          pruefe CLAUDE.md
+          pruefe CHANGELOG.md
+          pruefe SECURITY.md
+          pruefe CODEOWNERS
+          pruefe .github/copilot-instructions.md
+          [ -d docs/adr ] || { echo "::warning::docs/adr/ fehlt"; fehlt=$((fehlt+1)); }
+          echo "Fehlende Pflichtdateien: $fehlt"
+          echo "fehlende_pflichtdateien=$fehlt" >> "$GITHUB_OUTPUT"
+      - name: Zusammenfassung
+        run: |
+          {
+            echo "## Pflichtdateien"
+            echo
+            echo "Fehlend: **${{ steps.p.outputs.fehlende_pflichtdateien }}**"
+            echo
+            echo "Maßgeblich: \`SSR-AII/ssr-engineering-standard\` → STANDARD.md"
+          } >> "$GITHUB_STEP_SUMMARY"
